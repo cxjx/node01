@@ -60,7 +60,7 @@ const scapeOptions = {
   updateMissingSources: false,
 };
 const MinPixel = 100;
-const ImgReg = /\.(jpe?g)(\?.*)?/;
+const ImgReg = /\.(jpe?g|png)(\?.*)?/;
 const analysisAPI = 'http://35.202.251.156:1080/evaluation';
 // Creating a new database instance from the connection details:
 const db = pgp('postgresql://postgres:root123@localhost:5432/test');
@@ -167,7 +167,7 @@ async.auto({
   }],
   readDomains: ['readDomainsFromFile', 'readDomainsFromDB', function (results, callback) {
     const domainsFromFile = results.readDomainsFromFile;
-    const domainsFromDB = results.readDomainsFromDB;
+    const domainsFromDB = [];//results.readDomainsFromDB;
     const domains = domainsFromFile.filter( domain => domainsFromDB.indexOf(domain) < 0 );
 
     if(domains.length > 0){
@@ -238,34 +238,63 @@ async.auto({
     }
   }],
   saveDomains: ['createTables', 'readDomains', function (results, callback) {
-    const domains = results.readDomains;
-    // data input values:
-    const values = domains.map( domain => { return {name: domain} });
-    const cs = ColumnSet_domain;
-    // generating a multi-row insert query:
-    const query = pgp.helpers.insert(values, cs);
-    // executing the query:
-    db.none(query)
+    // // data input values:
+    const values = results.readDomains.map( domain => { return {name: domain} });
+    // const cs = ColumnSet_domain;
+    // // generating a multi-row insert query:
+    // const query = pgp.helpers.insert(values, cs);
+    // // executing the query:
+    // db.none(query)
+    //   .then(data => {
+    //     callback(null, 'success');
+    //   })
+    //   .catch(error => {
+    //     callback(error, null);
+    //   });
+
+    // insert via a transaction
+    db.tx(t => {
+      const queries = values.map(value => {
+        return t.query('insert into domain(${this:name}) values(${this:csv}) on conflict(name) do nothing;', value);
+      });
+      return t.batch(queries);
+    })
       .then(data => {
+        console.log('-----------saveDomains----------', data);
         callback(null, 'success');
       })
-      .catch(error => {
-        callback(error, null);
+      .catch(err => {
+        callback('failed');
       });
   }],
   saveAnalysisResults: ['saveDomains', 'convertAnalysisResults', function (results, callback) {
-    // data input values:
+    // // data input values:
     const values = results.convertAnalysisResults;
-    const cs = ColumnSet_analysis;
-    // generating a multi-row insert query:
-    const query = pgp.helpers.insert(values, cs);
-    // executing the query:
-    db.none(query)
+    // const cs = ColumnSet_analysis;
+    // // generating a multi-row insert query:
+    // const query = pgp.helpers.insert(values, cs);
+    // // executing the query:
+    // db.none(query)
+    //   .then(data => {
+    //     callback(null, 'success');
+    //   })
+    //   .catch(error => {
+    //     callback(error, null);
+    //   });
+
+    // insert via a transaction
+    db.tx(t => {
+      const queries = values.map(value => {
+        return t.query('insert into analysis(${this:name}) values(${this:csv}) on conflict(imgurl) do nothing;', value);
+      });
+      return t.batch(queries);
+    })
       .then(data => {
+        console.log('-----------saveAnalysisResults----------', data);
         callback(null, 'success');
       })
-      .catch(error => {
-        callback(error, null);
+      .catch(err => {
+        callback('failed');
       });
   }],
 }, function(err, results) {
