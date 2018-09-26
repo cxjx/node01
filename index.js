@@ -9,103 +9,21 @@ const pgp = require('pg-promise')({
   // Initialization Options
   capSQL: true // capitalize all generated SQL
 });
-/* https://github.com/website-scraper/node-website-scraper/blob/master/lib/config/defaults.js */
-const scapeOptions = {
-  directory: './tmp/download/',
-  filenameGenerator: 'byType',
-  defaultFilename: 'index.html',
-  prettifyUrls: false,
-  sources: [
-    { selector: 'style' },
-    { selector: '[style]', attr: 'style' },
-    { selector: 'img', attr: 'src' },
-    { selector: 'img', attr: 'srcset' },
-    { selector: 'input', attr: 'src' },
-    { selector: 'object', attr: 'data' },
-    { selector: 'embed', attr: 'src' },
-    { selector: 'link[rel*="icon"]', attr: 'href' },
-    { selector: 'picture source', attr: 'srcset' },
-    { selector: 'meta[property="og\\:image"]', attr: 'content' },
-    { selector: 'meta[property="og\\:image\\:url"]', attr: 'content' },
-    { selector: 'meta[property="og\\:image\\:secure_url"]', attr: 'content' },
-    { selector: 'frame', attr: 'src' },
-    { selector: 'iframe', attr: 'src' },
-  ],
-  subdirectories: [
-    { directory: 'images', extensions: ['.png', '.jpg', '.jpeg', '.gif', '.webp'] },
-    { directory: 'js', extensions: ['.js'] },
-    { directory: 'css', extensions: ['.css'] },
-    { directory: 'media', extensions: ['.mp4', '.mp3', '.ogg', '.webm', '.mov', '.wave', '.wav', '.flac'] },
-    { directory: 'fonts', extensions: ['.ttf', '.woff', '.woff2', '.eot', '.svg'] },
-  ],
-  request: {
-    headers: {
-      'User-Agent': 'Mozilla/5.0 (Linux; Android 4.2.1; en-us; Nexus 4 Build/JOP40D) AppleWebKit/535.19 (KHTML, like Gecko) Chrome/18.0.1025.166 Mobile Safari/535.19',
-    },
-    encoding: 'binary',
-    strictSSL: false,
-    jar: true,
-    gzip: true,
-  },
-  requestConcurrency: Infinity,
-  urlFilter: null,
-  recursive: false,
-  maxRecursiveDepth: null,
-  maxDepth: null,
-  ignoreErrors: true,
-  httpResponseHandler: null,
-  onResourceSaved: null,
-  onResourceError: null,
-  resourceSaver: null,
-  updateMissingSources: false,
-};
-const MinPixel = 100;
-const ImgReg = /\.(jpe?g|png)(\?.*)?/;
-const analysisAPI = 'http://localhost:1080/evaluation';
-// Creating a new database instance from the connection details:
-const db = pgp('postgresql://postgres:root123@localhost:5432/test');
-// our set of columns, to be created only once, and then shared/reused,
-// to let it cache up its formatting templates for high performance:
-const ColumnSet_domain = new pgp.helpers.ColumnSet(['name'], {table: 'domain'});
-const ColumnSet_analysis = new pgp.helpers.ColumnSet([
-  'imgurl',
-  'MotionBlur',
-  'Light',
-  'ColorHarmony',
-  'Symmetry',
-  'VividColor',
-  'Repetition',
-  'Content',
-  'DoF',
-  'Object',
-  'RuleOfThirds',
-  'BalancingElement',
-  'score',
-], {table: 'analysis'});
-const SQL_CREATE_TABLE_DOMAIN = 'CREATE TABLE IF NOT EXISTS "domain" \
-  (\
-    "id" SERIAL PRIMARY KEY, \
-    "name" varchar(64) UNIQUE NOT NULL\
-  )';
-const SQL_CREATE_TABLE_ANALYSIS = 'CREATE TABLE IF NOT EXISTS "analysis" \
-  (\
-    "id" SERIAL PRIMARY KEY, \
-    "domainid" int REFERENCES "domain"("id"), \
-    "imgurl" varchar(512) UNIQUE NOT NULL, \
-    "MotionBlur" real, \
-    "Light" real, \
-    "ColorHarmony" real, \
-    "Symmetry" real, \
-    "VividColor" real, \
-    "Repetition" real, \
-    "Content" real, \
-    "DoF" real, \
-    "Object" real, \
-    "RuleOfThirds" real, \
-    "BalancingElement" real, \
-    "score" real\
-  )';
-const SQL_SELECT_FROM_DOMAIN = '';
+const cfg = require('./config/config');
+const scapeOptions = cfg.scapeOptions;
+const MinPixel = cfg.MinPixel;
+const ImgReg = cfg.ImgReg;
+const analysisAPI = cfg.analysisAPI;
+const ColumnSet_domain = cfg.ColumnSet_domain;
+const ColumnSet_analysis = cfg.ColumnSet_analysis;
+const SQL_CREATE_TABLE_DOMAIN = cfg.SQL_CREATE_TABLE_DOMAIN;
+const SQL_CREATE_TABLE_ANALYSIS = cfg.SQL_CREATE_TABLE_ANALYSIS;
+const SQL_SELECT_FROM_DOMAIN = cfg.SQL_SELECT_FROM_DOMAIN;
+const SQL_INSERT_INTO_DOMAIN = cfg.SQL_INSERT_INTO_DOMAIN;
+const SQL_INSERT_INTO_ANALYSIS = cfg.SQL_INSERT_INTO_ANALYSIS;
+const db = pgp(cfg.dbConnection);
+const domainsFilePath = './config/Domains.js';
+
 
 async.auto({
   removeScrapeDir: function (callback) {
@@ -138,7 +56,7 @@ async.auto({
   },
   readDomainsFromFile: function (callback) {
     let domains = [];
-    fs.readFile('./config/Domains.js', 'utf-8', (err, data) => {
+    fs.readFile(domainsFilePath, 'utf-8', (err, data) => {
       if(err){
         callback(err);
       }else{
@@ -156,7 +74,7 @@ async.auto({
   },
   readDomainsFromDB: ['createTables', function (results, callback) {
     let domains = [];
-    db.query('select name from domain')
+    db.query(SQL_SELECT_FROM_DOMAIN)
       .then(data => {
         domains = data.map( domain => domain.name);
         console.log('-----------readDomainsFromDB----------', domains);
@@ -255,7 +173,7 @@ async.auto({
     // insert via a transaction
     db.tx(t => {
       const queries = values.map(value => {
-        return t.query('insert into domain(${this:name}) values(${this:csv}) on conflict(name) do nothing;', value);
+        return t.query(SQL_INSERT_INTO_DOMAIN, value);
       });
       return t.batch(queries);
     })
@@ -285,7 +203,7 @@ async.auto({
     // insert via a transaction
     db.tx(t => {
       const queries = values.map(value => {
-        return t.query('insert into analysis(${this:name}) values(${this:csv}) on conflict(imgurl) do nothing;', value);
+        return t.query(SQL_INSERT_INTO_ANALYSIS, value);
       });
       return t.batch(queries);
     })
