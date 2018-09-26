@@ -61,7 +61,7 @@ const scapeOptions = {
 };
 const MinPixel = 100;
 const ImgReg = /\.(jpe?g|png)(\?.*)?/;
-const analysisAPI = 'http://35.202.251.156:1080/evaluation';
+const analysisAPI = 'http://localhost:1080/evaluation';
 // Creating a new database instance from the connection details:
 const db = pgp('postgresql://postgres:root123@localhost:5432/test');
 // our set of columns, to be created only once, and then shared/reused,
