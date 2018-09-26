@@ -178,7 +178,11 @@ async.auto({
         callback(err)
       }else{
         console.log('-----------scrapeImagesUrls----------', imageUrls);
-        callback(null, imageUrls);
+        if(imageUrls.length > 0){
+          callback(null, imageUrls);
+        }else{
+          callback('Empty imageUrls');
+        }
       }
     });
   }],
