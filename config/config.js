@@ -1,3 +1,7 @@
+const pgp = require('pg-promise')({
+  // Initialization Options
+  capSQL: true // capitalize all generated SQL
+});
 
 module.exports = {
   /* https://github.com/website-scraper/node-website-scraper/blob/master/lib/config/defaults.js */
@@ -54,7 +58,7 @@ module.exports = {
   ImgReg: /\.(jpe?g)(\?.*)?/,
   analysisAPI: 'http://localhost:1080/evaluation',
   // Creating a new database instance from the connection details:
-  dbConnection: pgp('postgresql://postgres:root123@localhost:5432/test'),
+  dbConnection: 'postgresql://postgres:root123@localhost:5432/test',
   // our set of columns, to be created only once, and then shared/reused,
   // to let it cache up its formatting templates for high performance:
   ColumnSet_domain: new pgp.helpers.ColumnSet(['name'], {table: 'domain'}),
