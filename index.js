@@ -60,6 +60,7 @@ const scapeOptions = {
   updateMissingSources: false,
 };
 const MinPixel = 100;
+const ImgReg = /\.(jpe?g)(\?.*)?/;
 const analysisAPI = 'http://35.202.251.156:1080/evaluation';
 // Creating a new database instance from the connection details:
 const db = pgp('postgresql://postgres:root123@localhost:5432/test');
@@ -84,7 +85,7 @@ const ColumnSet_analysis = new pgp.helpers.ColumnSet([
 const SQL_CREATE_TABLE_DOMAIN = 'CREATE TABLE IF NOT EXISTS "domain" \
   (\
     "id" SERIAL PRIMARY KEY, \
-    "name" character(64) UNIQUE NOT NULL\
+    "name" varchar(64) UNIQUE NOT NULL\
   )';
 const SQL_CREATE_TABLE_ANALYSIS = 'CREATE TABLE IF NOT EXISTS "analysis" \
   (\
@@ -104,9 +105,19 @@ const SQL_CREATE_TABLE_ANALYSIS = 'CREATE TABLE IF NOT EXISTS "analysis" \
     "BalancingElement" real, \
     "score" real\
   )';
-
+const SQL_SELECT_FROM_DOMAIN = '';
 
 async.auto({
+  removeScrapeDir: function (callback) {
+    fs.remove(scapeOptions.directory, err => {
+      if(err){
+        callback(err);
+      }else{
+        console.log('-----------removeScrapeDir----------', scapeOptions.directory);
+        callback(null, `remove ${scapeOptions.directory} success`);
+      }
+    });
+  },
   createTables: function (callback) {
     db.task('create-tables', t => {
       // execute a chain of queries against the task context, and return the result:
@@ -125,7 +136,7 @@ async.auto({
         callback('failed');
       });
   },
-  readDomains: function (callback) {
+  readDomainsFromFile: function (callback) {
     let domains = [];
     fs.readFile('./config/Domains.js', 'utf-8', (err, data) => {
       if(err){
@@ -134,8 +145,8 @@ async.auto({
         domains = data.split(/\r?\n/ig) .map( domain => {
           return 'http://' + domain;
         });
+        console.log('-----------readDomainsFromFile----------', domains);
         if(domains.length > 0){
-          console.log('-----------readDomains----------', domains);
           callback(null, domains);
         }else{
           callback('Empty domains');
@@ -143,16 +154,29 @@ async.auto({
       }
     });
   },
-  removeScrapeDir: function (callback) {
-    fs.remove(scapeOptions.directory, err => {
-      if(err){
-        callback(err);
-      }else{
-        console.log('-----------removeScrapeDir----------', scapeOptions.directory);
-        callback(null, `remove ${scapeOptions.directory} success`);
-      }
-    });
-  },
+  readDomainsFromDB: ['createTables', function (results, callback) {
+    let domains = [];
+    db.query('select name from domain')
+      .then(data => {
+        domains = data.map( domain => domain.name);
+        console.log('-----------readDomainsFromDB----------', domains);
+        callback(null, domains);
+      }).catch(err => {
+        callback(null, domains);
+      });
+  }],
+  readDomains: ['readDomainsFromFile', 'readDomainsFromDB', function (results, callback) {
+    const domainsFromFile = results.readDomainsFromFile;
+    const domainsFromDB = results.readDomainsFromDB;
+    const domains = domainsFromFile.filter( domain => domainsFromDB.indexOf(domain) < 0 );
+
+    if(domains.length > 0){
+      console.log('-----------readDomains----------', domains);
+      callback(null, domains);
+    }else{
+      callback('Empty domains');
+    }
+  }],
   scrapeImagesUrls: ['readDomains', 'removeScrapeDir', function (results, callback) {
     const domains = results.readDomains;
     let imageUrls = [];
@@ -161,7 +185,7 @@ async.auto({
       urls: domains,
       onResourceSaved: (resource) => {
         console.log(resource.filename);
-        if(/\.(jpe?g)(\?.*)?/.test(resource.filename)){
+        if(ImgReg.test(resource.filename)){
           const basePath = path.resolve(process.cwd(), scapeOptions.directory);
           const fileName = path.join(basePath, resource.filename);
           const imgSize = images(fileName).size();
@@ -207,7 +231,11 @@ async.auto({
         return Object.assign({imgurl: k}, o[k])
       }
     });
-    callback(null, data);
+    if(data.length > 0){
+      callback(null, data);
+    }else{
+      callback('Empty data');
+    }
   }],
   saveDomains: ['createTables', 'readDomains', function (results, callback) {
     const domains = results.readDomains;
