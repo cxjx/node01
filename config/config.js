@@ -7,6 +7,8 @@ const URL_TABLE_NAME = 'url';
 const IMAGE_TABLE_NAME = 'image';
 
 module.exports = {
+  OK: 'success',
+  NOK: 'failed',
   /* https://github.com/website-scraper/node-website-scraper/blob/master/lib/config/defaults.js */
   scapeOptions: {
     directory: './tmp/download/',
@@ -103,7 +105,7 @@ module.exports = {
       "BalancingElement" real, \
       "score" real\
     )',
-  SQL_SELECT_FROM_DOMAIN: 'select name from '+URL_TABLE_NAME,
+  SQL_SELECT_FROM_DOMAIN: 'select * from '+URL_TABLE_NAME,
   SQL_INSERT_INTO_DOMAIN: 'insert into '+URL_TABLE_NAME+'(${this:name}) values(${this:csv}) on conflict(name) do nothing;',
   SQL_INSERT_INTO_ANALYSIS: 'insert into '+IMAGE_TABLE_NAME+'(${this:name}) values(${this:csv}) on conflict(imgurl) do nothing;',
 }

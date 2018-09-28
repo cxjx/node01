@@ -9,66 +9,24 @@ const pgp = require('pg-promise')({
   // Initialization Options
   capSQL: true // capitalize all generated SQL
 });
+const initTables = require('./tasks/initTables');
+const removeDir = require('./tasks/removeDir');
+const readDomainsFromDB = require('./tasks/readDomainsFromDB');
 const readDomainsFromFile = require('./tasks/readDomainsFromFile');
 const getImageSrc = require('./tasks/getImageSrc');
 
 const cfg = require('./config/config');
-const scapeOptions = cfg.scapeOptions;
-const MinPixel = cfg.MinPixel;
-const ImgReg = cfg.ImgReg;
+
 const analysisAPI = cfg.analysisAPI;
-const ColumnSet_domain = cfg.ColumnSet_domain;
-const ColumnSet_analysis = cfg.ColumnSet_analysis;
-const SQL_CREATE_TABLE_DOMAIN = cfg.SQL_CREATE_TABLE_DOMAIN;
-const SQL_CREATE_TABLE_ANALYSIS = cfg.SQL_CREATE_TABLE_ANALYSIS;
-const SQL_SELECT_FROM_DOMAIN = cfg.SQL_SELECT_FROM_DOMAIN;
 const SQL_INSERT_INTO_DOMAIN = cfg.SQL_INSERT_INTO_DOMAIN;
 const SQL_INSERT_INTO_ANALYSIS = cfg.SQL_INSERT_INTO_ANALYSIS;
 const db = pgp(cfg.dbConnection);
-const domainsFilePath = './config/Domains.js';
-
 
 async.auto({
-  removeScrapeDir: function (callback) {
-    fs.remove(scapeOptions.directory, err => {
-      if(err){
-        callback(err);
-      }else{
-        console.log('-----------removeScrapeDir----------', scapeOptions.directory);
-        callback(null, `remove ${scapeOptions.directory} success`);
-      }
-    });
-  },
-  createTables: function (callback) {
-    db.task('create-tables', t => {
-      // execute a chain of queries against the task context, and return the result:
-      return t.none(SQL_CREATE_TABLE_DOMAIN).then(() => {
-        return t.none(SQL_CREATE_TABLE_ANALYSIS).then(() => {
-          return 'sucess';
-        });
-      });
-    })
-      .then(data => {
-        console.log('-----------createTables----------', data);
-        callback(null, 'success');
-      })
-      .catch(error => {
-        console.log(error);
-        callback('failed');
-      });
-  },
+  initTables: initTables,
+  removeScrapeDir: removeDir,
   readDomainsFromFile: readDomainsFromFile,
-  readDomainsFromDB: ['createTables', function (results, callback) {
-    let domains = [];
-    db.query(SQL_SELECT_FROM_DOMAIN)
-      .then(data => {
-        domains = data.map( domain => domain.name);
-        console.log('-----------readDomainsFromDB----------', domains);
-        callback(null, domains);
-      }).catch(err => {
-        callback(null, domains);
-      });
-  }],
+  readDomainsFromDB: ['initTables', readDomainsFromDB],
   readDomains: ['readDomainsFromFile', 'readDomainsFromDB', function (results, callback) {
     const domainsFromFile = results.readDomainsFromFile;
     const domainsFromDB = [];//results.readDomainsFromDB;
@@ -81,7 +39,7 @@ async.auto({
       callback('Empty domains');
     }
   }],
-  scrapeImagesUrls: getImageSrc,
+  scrapeImagesUrls: ['readDomains', 'removeScrapeDir', getImageSrc],
   getAnalysisResults: ['scrapeImagesUrls', function (results, callback) {
     /* analysis images */
     const imageUrls = results.scrapeImagesUrls;
@@ -109,7 +67,7 @@ async.auto({
       callback('Empty data');
     }
   }],
-  saveDomains: ['createTables', 'readDomains', function (results, callback) {
+  saveDomains: ['initTables', 'readDomains', function (results, callback) {
     // // data input values:
     const values = results.readDomains.map( domain => { return {name: domain} });
     // const cs = ColumnSet_domain;
@@ -132,7 +90,6 @@ async.auto({
       return t.batch(queries);
     })
       .then(data => {
-        console.log('-----------saveDomains----------', data);
         callback(null, 'success');
       })
       .catch(err => {
