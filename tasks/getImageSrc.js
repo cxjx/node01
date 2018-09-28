@@ -8,18 +8,16 @@ const cfg = require('../config/config');
 
 // cfg.MinPixel = 200;
 // cfg.ImgReg = /\.(jpe?g)(\?.*)?/;
-// const getImageSrc = ['readDomains', 'removeScrapeDir', function (results, callback) {}];
-const getImageSrc = function (results, callback) {
-  const domains = results.readDomains;
+const getImageSrc = function (domains, callback) {
 
-  let tasks = domains.reduce((result, domain) => {
+  let tasks = domains.reduce((task, domain) => {
 
-    result[domain] = function(callback) {
+    task[domain.id] = function(callback) {
       let imageUrls = [];
       let directory = './tmp/' + domain.split('http://')[1];
 
       let options = _.extend({}, cfg.scapeOptions, {
-        urls: domain,
+        urls: domain.name,
         directory: directory,
         onResourceSaved: (resource) => {
           if(cfg.ImgReg.test(resource.filename)){
@@ -43,17 +41,16 @@ const getImageSrc = function (results, callback) {
           if(imageUrls.length > 0){
             callback(null, imageUrls);
           }else{
-            callback('imageUrls is empty');
+            callback(cfg.EMPTY);
           }
         }
       });
     };
 
-    return result;
+    return task;
   },{});
 
   async.parallel(tasks, function(err, results) {
-    // console.log(results);
     if(err){
       callback(err||cfg.NOK);
     }else{

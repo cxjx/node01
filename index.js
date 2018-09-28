@@ -7,39 +7,67 @@ const request = require('request');
 const images = require("images");
 
 const { pgp } = require('./utils/db');
-const initTables = require('./tasks/initTables');
-const removeDir = require('./tasks/removeDir');
-const readDomainsFromDB = require('./tasks/readDomainsFromDB');
-const readDomainsFromFile = require('./tasks/readDomainsFromFile');
-const getImageSrc = require('./tasks/getImageSrc');
-const getAnalysisResults = require('./tasks/getAnalysisResults');
-const insertTableUrl = require('./tasks/insertTableUrl');
-const insertTableImage = require('./tasks/insertTableImage');
+const _initTables = require('./tasks/initTables');
+const _removeDir = require('./tasks/removeDir');
+const _getDomainsFromDB = require('./tasks/getDomainsFromDB');
+const _getDomainsFromFile = require('./tasks/getDomainsFromFile');
+const _getImageSrc = require('./tasks/getImageSrc');
+const _getAnalysisResults = require('./tasks/getAnalysisResults');
+const _insertTableUrl = require('./tasks/insertTableUrl');
+const _insertTableImage = require('./tasks/insertTableImage');
 
 const cfg = require('./config/config');
 
 async.auto({
-  removeDir: removeDir,
-  initTables: initTables,
-  readDomainsFromFile: readDomainsFromFile,
-  insertDomains: ['initTables', 'readDomainsFromFile', insertTableUrl],
-  readDomainsFromDB: ['insertDomains', readDomainsFromDB],
-  readDomains: ['readDomainsFromFile', 'readDomainsFromDB', function (results, callback) {
-    // const domainsFromFile = results.readDomainsFromFile;
-    // const domainsFromDB = results.readDomainsFromDB;
+  removeDir: function (callback) {
+    const dir = cfg.scapeOptions.directory;
+
+    _removeDir(dir, callback);
+  },
+  initTables: function (callback) {
+    _initTables(callback);
+  },
+  getDomainsFromFile: function (callback) {
+    const filePath = './config/Domains.js';
+
+    _getDomainsFromFile(filePath, callback);
+  },
+  insertDomains: ['initTables', 'getDomainsFromFile', function(results, callback){
+    const values = results.getDomainsFromFile.map( domain => { return {name: domain} });
+
+    _insertTableUrl(values, callback);
+  }],
+  getDomainsFromDB: ['insertDomains', function (results, callback) {
+    _getDomainsFromDB(callback);
+  }],
+  readDomains: ['getDomainsFromFile', 'getDomainsFromDB', function (results, callback) {
+    // const domainsFromFile = results.getDomainsFromFile;
+    // const domainsFromDB = results.getDomainsFromDB;
     // const domains = domainsFromFile.filter( domain => domainsFromDB.indexOf(domain) < 0 );
-    const domains = results.readDomainsFromDB;
+    const domains = results.getDomainsFromDB;
 
     if(domains.length > 0){
       callback(null, domains);
     }else{
-      callback(cfg.NOK);
+      callback(cfg.EMPTY);
     }
   }],
-  scrapeImagesUrls: ['readDomains', 'removeDir', getImageSrc],
-  getAnalysisResults: ['scrapeImagesUrls', getAnalysisResults],
-  convertAnalysisResults: ['getAnalysisResults', function (results, callback) {
+  scrapeImagesUrls: ['removeDir', 'readDomains', function (results, callback) {
+    // [{id: 1, name: 'http://letsdothis.com'}, {id: 2, name: 'http://theathletic.com'}]
+    const domains = results.readDomains;
+
+    _getImageSrc(domains, callback);
+  }],
+  getAnalysisResults: ['scrapeImagesUrls', function (results, callback) {
+    // {domainid: [imgurl01, imgurl02], domainid: [imgurl01, imgurl02]}
+    const imageUrls = results.scrapeImagesUrls;
+
+    _getAnalysisResults(imageUrls, callback);
+  }],
+  saveResults: ['insertDomains', 'convertAnalysisResults', function (results, callback) {
     const res = results.getAnalysisResults;
+    console.log(res);
+    
     let data = JSON.parse(res.result);
     data = data.map(o => {
       for(let k in o){
@@ -51,8 +79,9 @@ async.auto({
     }else{
       callback('Empty data');
     }
+
+    _insertTableImage(values, callback)
   }],
-  saveAnalysisResults: ['insertDomains', 'convertAnalysisResults', insertTableImage],
 }, function(err, results) {
   pgp.end();
   console.log('err = ', err);

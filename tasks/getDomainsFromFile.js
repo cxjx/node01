@@ -1,14 +1,14 @@
 const readline = require('readline');
 const fs = require('fs-extra');
 
-const filePath = './config/Domains.js';
 const domainFilter = function (line) {
   let domain = line.trim();
   let reg = /[a-zA-Z0-9][-a-zA-Z0-9]{0,62}(\.[a-zA-Z0-9][-a-zA-Z0-9]{0,62})+\.?/;
   return reg.test(domain) ? ('http://'+domain) : false;
 };
 
-const readDomainsFromFile = function (callback) {
+const getDomainsFromFile = function (filePath, callback) {
+  const filePath = filePath || './config/Domains.js';
   const rd = readline.createInterface({
     input: fs.createReadStream(filePath),
   });
@@ -27,5 +27,5 @@ const readDomainsFromFile = function (callback) {
     })
 };
 
-// readDomainsFromFile(function(...args){console.log(args[1])});
-module.exports = readDomainsFromFile;
+// getDomainsFromFile(function(...args){console.log(args[1])});
+module.exports = getDomainsFromFile;

@@ -1,8 +1,8 @@
 const fs = require('fs-extra');
 const cfg = require('../config/config');
 
-const removeDir = function (callback) {
-  fs.remove(cfg.scapeOptions.directory, err => {
+const removeDir = function (dir, callback) {
+  fs.remove(dir, err => {
     if(err){
       callback(err||cfg.NOK);
     }else{

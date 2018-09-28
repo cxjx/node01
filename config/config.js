@@ -5,6 +5,7 @@ const IMAGE_TABLE_NAME = 'image';
 module.exports = {
   OK: 'success',
   NOK: 'failed',
+  EMPTY: 'isEmptyArray',
   /* https://github.com/website-scraper/node-website-scraper/blob/master/lib/config/defaults.js */
   scapeOptions: {
     directory: './tmp/download/',
