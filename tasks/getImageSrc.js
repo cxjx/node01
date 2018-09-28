@@ -37,12 +37,7 @@ const getImageSrc = function (domains, callback) {
         if(err){
           callback(err);
         }else{
-          // console.log(`-----------${domain.name}----------`, imageUrls);
-          if(imageUrls.length > 0){
-            callback(null, imageUrls);
-          }else{
-            callback(cfg.EMPTY);
-          }
+          callback(null, imageUrls);
         }
       });
     };
