@@ -79,12 +79,10 @@ async.auto({
     });
 
     if(values.length > 0){
-      callback(null, values);
+      _insertTableImage(values, callback)
     }else{
       callback(cfg.EMPTY);
     }
-
-    _insertTableImage(values, callback)
   }],
 }, function(err, results) {
   pgp.end();
