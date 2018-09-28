@@ -30,10 +30,7 @@ function multi_insert (values, callback) {
     });
 };
 
-const insertTableImage = function (results, callback) {
-    // // data input values:
-    const values = results['convertAnalysisResults'];
-
+const insertTableImage = function (values, callback) {
     // insert multiple records via a transaction
     db.tx(t => {
       const queries = values.map(value => {

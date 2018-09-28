@@ -81,7 +81,7 @@ async.auto({
     if(values.length > 0){
       callback(null, values);
     }else{
-      callback('Empty data');
+      callback(cfg.EMPTY);
     }
 
     _insertTableImage(values, callback)
