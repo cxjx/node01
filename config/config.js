@@ -1,7 +1,3 @@
-// const pgp = require('pg-promise')({
-//   // Initialization Options
-//   capSQL: true // capitalize all generated SQL
-// });
 
 const URL_TABLE_NAME = 'url';
 const IMAGE_TABLE_NAME = 'image';
@@ -62,26 +58,10 @@ module.exports = {
   MinPixel: 500,
   ImgReg: /\.(jpe?g)(\?.*)?/,
   analysisAPI: 'http://localhost:1080/evaluation',
-  // Creating a new database instance from the connection details:
+  // database connection:
   dbConnection: 'postgresql://postgres:root123@localhost:5432/test',
-  // our set of columns, to be created only once, and then shared/reused,
-  // to let it cache up its formatting templates for high performance:
-  // ColumnSet_domain: new pgp.helpers.ColumnSet(['name'], {table: URL_TABLE_NAME}),
-  // ColumnSet_analysis: new pgp.helpers.ColumnSet([
-  //   'imgurl',
-  //   'MotionBlur',
-  //   'Light',
-  //   'ColorHarmony',
-  //   'Symmetry',
-  //   'VividColor',
-  //   'Repetition',
-  //   'Content',
-  //   'DoF',
-  //   'Object',
-  //   'RuleOfThirds',
-  //   'BalancingElement',
-  //   'score',
-  // ], {table: IMAGE_TABLE_NAME}),
+  URL_TABLE_NAME: URL_TABLE_NAME,
+  IMAGE_TABLE_NAME: IMAGE_TABLE_NAME,
   SQL_CREATE_TABLE_DOMAIN: 'CREATE TABLE IF NOT EXISTS "'+URL_TABLE_NAME+'" \
     (\
       "id" SERIAL PRIMARY KEY, \
@@ -106,6 +86,6 @@ module.exports = {
       "score" real\
     )',
   SQL_SELECT_FROM_DOMAIN: 'select * from '+URL_TABLE_NAME,
-  SQL_INSERT_INTO_DOMAIN: 'insert into '+URL_TABLE_NAME+'(${this:name}) values(${this:csv}) on conflict(name) do nothing;',
+  SQL_INSERT_INTO_DOMAIN: 'insert into '+URL_TABLE_NAME+'(${this:name}) values(${this:csv}) on conflict(name) do nothing RETURNING *',
   SQL_INSERT_INTO_ANALYSIS: 'insert into '+IMAGE_TABLE_NAME+'(${this:name}) values(${this:csv}) on conflict(imgurl) do nothing;',
 }

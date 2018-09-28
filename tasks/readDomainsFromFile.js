@@ -13,17 +13,17 @@ const readDomainsFromFile = function (callback) {
     input: fs.createReadStream(filePath),
   });
 
-  let lines = [];
+  let urls = [];
   rd.on('line', line => {
       // console.log(`line: ${line}`);
       let domain = domainFilter(line);
       if(domain){
-        lines.push(domain)
+        urls.push(domain)
       };
     })
     .on('close', () => {
-      // console.log(`lines: ${lines}`);
-      callback(null, lines);
+      // console.log(`urls: ${urls}`);
+      callback(null, urls);
     })
 };
 

@@ -1,4 +1,4 @@
-const db = require('../utils/db');
+const { db } = require('../utils/db');
 const cfg = require('../config/config');
 
 const initTables = function (callback) {

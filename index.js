@@ -5,27 +5,24 @@ const fs = require('fs-extra');
 const scrape = require('website-scraper');
 const request = require('request');
 const images = require("images");
-const pgp = require('pg-promise')({
-  // Initialization Options
-  capSQL: true // capitalize all generated SQL
-});
+
+const { pgp } = require('./utils/db');
 const initTables = require('./tasks/initTables');
 const removeDir = require('./tasks/removeDir');
 const readDomainsFromDB = require('./tasks/readDomainsFromDB');
 const readDomainsFromFile = require('./tasks/readDomainsFromFile');
 const getImageSrc = require('./tasks/getImageSrc');
+const getAnalysisResults = require('./tasks/getAnalysisResults');
+const insertTableUrl = require('./tasks/insertTableUrl');
+const insertTableImage = require('./tasks/insertTableImage');
 
 const cfg = require('./config/config');
 
-const analysisAPI = cfg.analysisAPI;
-const SQL_INSERT_INTO_DOMAIN = cfg.SQL_INSERT_INTO_DOMAIN;
-const SQL_INSERT_INTO_ANALYSIS = cfg.SQL_INSERT_INTO_ANALYSIS;
-const db = pgp(cfg.dbConnection);
-
 async.auto({
+  removeDir: removeDir,
   initTables: initTables,
-  removeScrapeDir: removeDir,
   readDomainsFromFile: readDomainsFromFile,
+  insertDomains: ['initTables', 'readDomainsFromFile', insertTableUrl],
   readDomainsFromDB: ['initTables', readDomainsFromDB],
   readDomains: ['readDomainsFromFile', 'readDomainsFromDB', function (results, callback) {
     const domainsFromFile = results.readDomainsFromFile;
@@ -39,20 +36,8 @@ async.auto({
       callback('Empty domains');
     }
   }],
-  scrapeImagesUrls: ['readDomains', 'removeScrapeDir', getImageSrc],
-  getAnalysisResults: ['scrapeImagesUrls', function (results, callback) {
-    /* analysis images */
-    const imageUrls = results.scrapeImagesUrls;
-
-    request.get({url: analysisAPI, body: imageUrls, json: true}, (err, response, body) => {
-      if (!err && response.statusCode == 200){
-        console.log('-----------getAnalysisResults----------', body);
-        callback(null, body);
-      }else{
-        callback(err||response.statusCode);
-      }
-    });
-  }],
+  scrapeImagesUrls: ['readDomains', 'removeDir', getImageSrc],
+  getAnalysisResults: ['scrapeImagesUrls', getAnalysisResults],
   convertAnalysisResults: ['getAnalysisResults', function (results, callback) {
     const res = results.getAnalysisResults;
     let data = JSON.parse(res.result);
@@ -67,65 +52,7 @@ async.auto({
       callback('Empty data');
     }
   }],
-  saveDomains: ['initTables', 'readDomains', function (results, callback) {
-    // // data input values:
-    const values = results.readDomains.map( domain => { return {name: domain} });
-    // const cs = ColumnSet_domain;
-    // // generating a multi-row insert query:
-    // const query = pgp.helpers.insert(values, cs);
-    // // executing the query:
-    // db.none(query)
-    //   .then(data => {
-    //     callback(null, 'success');
-    //   })
-    //   .catch(error => {
-    //     callback(error, null);
-    //   });
-
-    // insert via a transaction
-    db.tx(t => {
-      const queries = values.map(value => {
-        return t.query(SQL_INSERT_INTO_DOMAIN, value);
-      });
-      return t.batch(queries);
-    })
-      .then(data => {
-        callback(null, 'success');
-      })
-      .catch(err => {
-        callback('failed');
-      });
-  }],
-  saveAnalysisResults: ['saveDomains', 'convertAnalysisResults', function (results, callback) {
-    // // data input values:
-    const values = results.convertAnalysisResults;
-    // const cs = ColumnSet_analysis;
-    // // generating a multi-row insert query:
-    // const query = pgp.helpers.insert(values, cs);
-    // // executing the query:
-    // db.none(query)
-    //   .then(data => {
-    //     callback(null, 'success');
-    //   })
-    //   .catch(error => {
-    //     callback(error, null);
-    //   });
-
-    // insert via a transaction
-    db.tx(t => {
-      const queries = values.map(value => {
-        return t.query(SQL_INSERT_INTO_ANALYSIS, value);
-      });
-      return t.batch(queries);
-    })
-      .then(data => {
-        console.log('-----------saveAnalysisResults----------', data);
-        callback(null, 'success');
-      })
-      .catch(err => {
-        callback('failed');
-      });
-  }],
+  saveAnalysisResults: ['insertDomains', 'convertAnalysisResults', insertTableImage],
 }, function(err, results) {
   pgp.end();
   console.log('err = ', err);

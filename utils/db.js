@@ -9,4 +9,5 @@ const cfg = require('../config/config');
 const db = pgp(cfg.dbConnection);
 
 // Exporting the database object for shared use:
-module.exports = db;
+module.exports.db = db;
+module.exports.pgp = pgp;
