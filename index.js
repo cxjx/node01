@@ -9,6 +9,9 @@ const pgp = require('pg-promise')({
   // Initialization Options
   capSQL: true // capitalize all generated SQL
 });
+const readDomainsFromFile = require('./tasks/readDomainsFromFile');
+const getImageSrc = require('./tasks/getImageSrc');
+
 const cfg = require('./config/config');
 const scapeOptions = cfg.scapeOptions;
 const MinPixel = cfg.MinPixel;
@@ -54,24 +57,7 @@ async.auto({
         callback('failed');
       });
   },
-  readDomainsFromFile: function (callback) {
-    let domains = [];
-    fs.readFile(domainsFilePath, 'utf-8', (err, data) => {
-      if(err){
-        callback(err);
-      }else{
-        domains = data.split(/\r?\n/ig) .map( domain => {
-          return 'http://' + domain;
-        });
-        console.log('-----------readDomainsFromFile----------', domains);
-        if(domains.length > 0){
-          callback(null, domains);
-        }else{
-          callback('Empty domains');
-        }
-      }
-    });
-  },
+  readDomainsFromFile: readDomainsFromFile,
   readDomainsFromDB: ['createTables', function (results, callback) {
     let domains = [];
     db.query(SQL_SELECT_FROM_DOMAIN)
@@ -95,39 +81,7 @@ async.auto({
       callback('Empty domains');
     }
   }],
-  scrapeImagesUrls: ['readDomains', 'removeScrapeDir', function (results, callback) {
-    const domains = results.readDomains;
-    let imageUrls = [];
-
-    const options = _.extend({}, scapeOptions, {
-      urls: domains,
-      onResourceSaved: (resource) => {
-        console.log(resource.filename);
-        if(ImgReg.test(resource.filename)){
-          const basePath = path.resolve(process.cwd(), scapeOptions.directory);
-          const fileName = path.join(basePath, resource.filename);
-          const imgSize = images(fileName).size();
-
-          if(Math.max(imgSize.width,imgSize.height) >= MinPixel){
-            imageUrls.push(resource.url);
-          }
-        }
-      },
-    });
-
-    scrape(options, (err, data) => {
-      if(err){
-        callback(err)
-      }else{
-        console.log('-----------scrapeImagesUrls----------', imageUrls);
-        if(imageUrls.length > 0){
-          callback(null, imageUrls);
-        }else{
-          callback('Empty imageUrls');
-        }
-      }
-    });
-  }],
+  scrapeImagesUrls: getImageSrc,
   getAnalysisResults: ['scrapeImagesUrls', function (results, callback) {
     /* analysis images */
     const imageUrls = results.scrapeImagesUrls;
