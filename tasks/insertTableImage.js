@@ -17,7 +17,7 @@ function multi_insert (values, callback) {
     'RuleOfThirds',
     'BalancingElement',
     'score',
-  ], {table: cfg.IMAGE_TABLE_NAME}),
+  ], {table: cfg.IMAGE_TABLE_NAME});
   // generating a multi-row insert query:
   const query = pgp.helpers.insert(values, cs);
   // executing the query:

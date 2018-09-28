@@ -86,6 +86,6 @@ module.exports = {
       "score" real\
     )',
   SQL_SELECT_FROM_DOMAIN: 'select * from '+URL_TABLE_NAME,
-  SQL_INSERT_INTO_DOMAIN: 'insert into '+URL_TABLE_NAME+'(${this:name}) values(${this:csv}) on conflict(name) do nothing RETURNING *',
-  SQL_INSERT_INTO_ANALYSIS: 'insert into '+IMAGE_TABLE_NAME+'(${this:name}) values(${this:csv}) on conflict(imgurl) do nothing;',
+  SQL_INSERT_INTO_DOMAIN: 'insert into '+URL_TABLE_NAME+'(${this:name}) values(${this:csv}) on conflict(name) do nothing',
+  SQL_INSERT_INTO_ANALYSIS: 'insert into '+IMAGE_TABLE_NAME+'(${this:name}) values(${this:csv}) on conflict(imgurl) do nothing',
 }

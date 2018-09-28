@@ -23,17 +23,17 @@ async.auto({
   initTables: initTables,
   readDomainsFromFile: readDomainsFromFile,
   insertDomains: ['initTables', 'readDomainsFromFile', insertTableUrl],
-  readDomainsFromDB: ['initTables', readDomainsFromDB],
+  readDomainsFromDB: ['insertDomains', readDomainsFromDB],
   readDomains: ['readDomainsFromFile', 'readDomainsFromDB', function (results, callback) {
-    const domainsFromFile = results.readDomainsFromFile;
-    const domainsFromDB = [];//results.readDomainsFromDB;
-    const domains = domainsFromFile.filter( domain => domainsFromDB.indexOf(domain) < 0 );
+    // const domainsFromFile = results.readDomainsFromFile;
+    // const domainsFromDB = results.readDomainsFromDB;
+    // const domains = domainsFromFile.filter( domain => domainsFromDB.indexOf(domain) < 0 );
+    const domains = results.readDomainsFromDB;
 
     if(domains.length > 0){
-      console.log('-----------readDomains----------', domains);
       callback(null, domains);
     }else{
-      callback('Empty domains');
+      callback(cfg.NOK);
     }
   }],
   scrapeImagesUrls: ['readDomains', 'removeDir', getImageSrc],
