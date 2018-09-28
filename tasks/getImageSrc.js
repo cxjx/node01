@@ -14,7 +14,7 @@ const getImageSrc = function (domains, callback) {
 
     task[domain.id] = function(callback) {
       let imageUrls = [];
-      let directory = './tmp/' + domain.split('http://')[1];
+      let directory = './tmp/' + domain.name.split('http://')[1];
 
       let options = _.extend({}, cfg.scapeOptions, {
         urls: domain.name,
@@ -37,7 +37,7 @@ const getImageSrc = function (domains, callback) {
         if(err){
           callback(err);
         }else{
-          console.log(`-----------${domain}----------`, imageUrls);
+          // console.log(`-----------${domain.name}----------`, imageUrls);
           if(imageUrls.length > 0){
             callback(null, imageUrls);
           }else{

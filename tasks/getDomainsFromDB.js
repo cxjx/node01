@@ -6,9 +6,11 @@ const getDomainsFromDB = function (callback) {
   db.query(cfg.SQL_SELECT_FROM_DOMAIN)
     .then(data => {
       callback(null, data);
-    }).catch(err => {
-      callback(null, domains);
-    });
+    })
+    // .catch(err => {
+    //   // callback(null, domains);
+    //   callback(err||cfg.NOK);
+    // });
 }
 
 module.exports = getDomainsFromDB;

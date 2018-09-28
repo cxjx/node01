@@ -64,18 +64,22 @@ async.auto({
 
     _getAnalysisResults(imageUrls, callback);
   }],
-  saveResults: ['insertDomains', 'convertAnalysisResults', function (results, callback) {
+  saveResults: ['insertDomains', 'getAnalysisResults', function (results, callback) {
+    const values = [];
     const res = results.getAnalysisResults;
-    console.log(res);
-    
-    let data = JSON.parse(res.result);
-    data = data.map(o => {
-      for(let k in o){
-        return Object.assign({imgurl: k}, o[k])
-      }
+    const ids = Object.keys(res);
+    ids.forEach(id => {
+      let data = JSON.parse(res[id].result);
+      data = data.map(o => {
+        for(let k in o){
+          return Object.assign({urlid: id, imgurl: k}, o[k])
+        }
+      });
+      values.push(...data);
     });
-    if(data.length > 0){
-      callback(null, data);
+
+    if(values.length > 0){
+      callback(null, values);
     }else{
       callback('Empty data');
     }
