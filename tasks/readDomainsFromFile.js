@@ -5,7 +5,7 @@ const filePath = './config/Domains.js';
 const domainFilter = function (line) {
   let domain = line.trim();
   let reg = /[a-zA-Z0-9][-a-zA-Z0-9]{0,62}(\.[a-zA-Z0-9][-a-zA-Z0-9]{0,62})+\.?/;
-  return reg.test(domain) ? domain : false;
+  return reg.test(domain) ? ('http://'+domain) : false;
 };
 
 const readDomainsFromFile = function (callback) {
