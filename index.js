@@ -1,23 +1,18 @@
 require('events').EventEmitter.defaultMaxListeners = 100;
 const async = require('async');
-const _ = require('lodash');
-const path = require('path');
-const fs = require('fs-extra');
-const scrape = require('website-scraper');
-const request = require('request');
-const images = require("images");
 
 const { pgp } = require('./utils/db');
-const _initTables = require('./tasks/initTables');
-const _removeDir = require('./tasks/removeDir');
-const _getDomainsFromDB = require('./tasks/getDomainsFromDB');
-const _getDomainsFromFile = require('./tasks/getDomainsFromFile');
-const _getImageSrc = require('./tasks/getImageSrc');
-const _getAnalysisResults = require('./tasks/getAnalysisResults');
-const _insertTableUrl = require('./tasks/insertTableUrl');
-const _insertTableImage = require('./tasks/insertTableImage');
-
 const cfg = require('./config/config');
+const _removeDir = require('./tasks/removeDir');
+const _initTables = require('./tasks/initTables');
+const _getDomainsFromFile = require('./tasks/getDomainsFromFile');
+const _insertTableUrl = require('./tasks/insertTableUrl');
+const _getDomainsFromDB = require('./tasks/getDomainsFromDB');
+// const _getImageSrc = require('./tasks/getImageSrc');
+// const _getAnalysisResults = require('./tasks/getAnalysisResults');
+// const _insertTableImage = require('./tasks/insertTableImage');
+const _run = require('./tasks/_run');
+
 async.auto({
   removeDir: function (callback) {
     const dir = cfg.scapeOptions.directory;
@@ -52,37 +47,10 @@ async.auto({
       callback(cfg.EMPTY);
     }
   }],
-  scrapeImagesUrls: ['removeDir', 'readDomains', function (results, callback) {
-    // [{id: 1, name: 'http://letsdothis.com'}, {id: 2, name: 'http://theathletic.com'}]
+  run: ['removeDir', 'readDomains', function (results, callback) {
     const domains = results.readDomains;
 
-    _getImageSrc(domains, callback);
-  }],
-  getAnalysisResults: ['scrapeImagesUrls', function (results, callback) {
-    // {domainid: [imgurl01, imgurl02], domainid: [imgurl01, imgurl02]}
-    const imageUrls = results.scrapeImagesUrls;
-
-    _getAnalysisResults(imageUrls, callback);
-  }],
-  saveResults: ['insertDomains', 'getAnalysisResults', function (results, callback) {
-    const values = [];
-    const res = results.getAnalysisResults;
-    const ids = Object.keys(res);
-    ids.forEach(id => {
-      let data = JSON.parse(res[id].result);
-      data = data.map(o => {
-        for(let k in o){
-          return Object.assign({urlid: id, imgurl: k}, o[k])
-        }
-      });
-      values.push(...data);
-    });
-
-    if(values.length > 0){
-      _insertTableImage(values, callback)
-    }else{
-      callback(cfg.EMPTY);
-    }
+    _run(domains, callback);
   }],
 }, function(err, results) {
   pgp.end();

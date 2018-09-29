@@ -6,8 +6,15 @@ const scrape = require('website-scraper');
 const images = require("images");
 const cfg = require('../config/config');
 
-// cfg.MinPixel = 200;
-// cfg.ImgReg = /\.(jpe?g)(\?.*)?/;
+// input = [
+//   {id: 1, name: 'http://letsdothis.com'},
+//   {id: 2, name: 'http://theathletic.com'}
+// ];
+// output = {
+//   '1': [ 'https://d178fu9mi2dmkb.cloudfront.net/webapp-media/images/logo-social.jpg' ],
+//   '2': [ 'https://s3-us-west-2.amazonaws.com/theathletic-promos/homepage/stadium-crowd-mobile.jpg' ]
+// };
+
 const getImageSrc = function (domains, callback) {
 
   let tasks = domains.reduce((task, domain) => {
