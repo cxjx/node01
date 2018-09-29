@@ -39,7 +39,6 @@ async.auto({
     const domainsFromFile = results.getDomainsFromFile;
     const domainsFromDB = results.getDomainsFromDB;
     const domains = domainsFromDB.filter( domain => domainsFromFile.indexOf(domain.name) >= 0 );
-    const domains = results.getDomainsFromDB;
 
     if(domains.length > 0){
       callback(null, domains);
