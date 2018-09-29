@@ -1,3 +1,4 @@
+require('events').EventEmitter.defaultMaxListeners = 100;
 const async = require('async');
 const _ = require('lodash');
 const path = require('path');
@@ -17,7 +18,6 @@ const _insertTableUrl = require('./tasks/insertTableUrl');
 const _insertTableImage = require('./tasks/insertTableImage');
 
 const cfg = require('./config/config');
-
 async.auto({
   removeDir: function (callback) {
     const dir = cfg.scapeOptions.directory;
