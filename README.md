@@ -2,7 +2,7 @@
 npm install
 
 
-# modify the config in index.js
+# modify the config in config/config.js
 const MinPixel = 100;
 
 const ImgReg = /\.(jpe?g)(\?.*)?/;
