@@ -21,13 +21,13 @@ const _run = function (domains, callback_auto) {
           // [{id: 1, name: 'http://letsdothis.com'}]
           _getImageSrc([domain], callback);
         },
-        getAnalysisResults: ['getImageSrc', function (callback) {
+        getAnalysisResults: ['getImageSrc', function (results, callback) {
           // {'1': ['https://d178fu9mi2dmkb.cloudfront.net/webapp-media/images/logo-social.jpg']}
           const imageUrls = results.getImageSrc;
 
           _getAnalysisResults(imageUrls, callback);
         }],
-        insertTableImage: ['getAnalysisResults', function () {
+        insertTableImage: ['getAnalysisResults', function (results, callback) {
           const values = [];
           const res = results.getAnalysisResults;
           const ids = Object.keys(res);
@@ -53,7 +53,7 @@ const _run = function (domains, callback_auto) {
         if(err){
           callback_parallel(err||cfg.NOK);
         }else{
-          console.log(`${domain} DONE, ${results.insertTableImage}`);
+          console.log(`${domain.name} DONE, ${JSON.stringify(results.insertTableImage)}`);
           callback_parallel(null, results);
         }
       });
