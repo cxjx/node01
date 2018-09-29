@@ -9,13 +9,24 @@ const _insertTableImage = require('./insertTableImage');
 //   {id: 1, name: 'http://letsdothis.com'},
 //   {id: 2, name: 'http://theathletic.com'}
 // ];
-// output = 
+// output = [
+//   {
+//     getImageSrc: [Object],
+//     getAnalysisResults: [Object],
+//     insertTableImage: 'isEmptyArray'
+//   }
+//   {
+//     getImageSrc: [Object],
+//     getAnalysisResults: [Object],
+//     insertTableImage: [Array]
+//   }
+// ];
 
 const _run = function (domains, callback_auto) {
 
   let tasks = domains.map( domain => {
     return function (callback_parallel) {
-
+      
       async.auto({
         getImageSrc: function (callback) {
           // [{id: 1, name: 'http://letsdothis.com'}]

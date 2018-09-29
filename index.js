@@ -36,9 +36,9 @@ async.auto({
     _getDomainsFromDB(callback);
   }],
   readDomains: ['getDomainsFromFile', 'getDomainsFromDB', function (results, callback) {
-    // const domainsFromFile = results.getDomainsFromFile;
-    // const domainsFromDB = results.getDomainsFromDB;
-    // const domains = domainsFromFile.filter( domain => domainsFromDB.indexOf(domain) < 0 );
+    const domainsFromFile = results.getDomainsFromFile;
+    const domainsFromDB = results.getDomainsFromDB;
+    const domains = domainsFromDB.filter( domain => domainsFromFile.indexOf(domain.name) >= 0 );
     const domains = results.getDomainsFromDB;
 
     if(domains.length > 0){
