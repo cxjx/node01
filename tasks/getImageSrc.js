@@ -45,7 +45,7 @@ const getImageSrc = function (domains, callback) {
     return task;
   },{});
 
-  async.parallel(tasks, function(err, results) {
+  async.parallelLimit(tasks, cfg.asyncParalelLimit, function(err, results) {
     if(err){
       callback(err||cfg.NOK);
     }else{

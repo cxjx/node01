@@ -19,7 +19,7 @@ const getAnalysisResults = function (imageUrls, callback) {
     }
   });
 
-  async.parallel(tasks, function(err, results) {
+  async.parallelLimit(tasks, cfg.asyncParalelLimit, function(err, results) {
     if(err){
       callback(err||cfg.NOK);
     }else{
