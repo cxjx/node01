@@ -8,6 +8,12 @@ module.exports = {
   EMPTY: 'isEmptyArray',
   asyncParalelLimit: 5,
   retryOpt: {times: 3, interval: 200},
+  // retryOpt: {
+  //   times: 5,
+  //   interval: function(retryCount) {
+  //     return 50 * Math.pow(2, retryCount);
+  //   }
+  // },
   MinPixel: 500,
   ImgReg: /\.(jpe?g)(\?.*)?/,
   analysisAPI: 'http://localhost:1080/evaluation',
