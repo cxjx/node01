@@ -42,7 +42,7 @@ const _getImageSrc = function (domain, callback) {
         if(imageSrc.length <= 0){
           callback(cfg.EMPTY);
         }else{
-          callback(null, _.extend({}, domain, {imageSrc: imageSrc});
+          callback(null, );
         }
       }
     });
@@ -51,7 +51,15 @@ const _getImageSrc = function (domain, callback) {
   // try calling apiMethod 3 times
   async.retry(cfg.retryOpt, task, function(err, results) {
     // do something with the result
-    callback(err, results);
+    if(err){
+      if(err === cfg.EMPTY){
+        callback(err, _.extend({}, domain, {imageSrc: []}));
+      }else{
+        callback(err);
+      }
+    }else{
+      callback(null, _.extend({}, domain, {imageSrc: results}));
+    }
   });
 };
 

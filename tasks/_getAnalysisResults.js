@@ -22,7 +22,7 @@ const _getAnalysisResults = function (imageSrc, callback) {
   const task = function (callback) {
     request.get({url: url, body: data, json: true}, (err, response, body) => {
       if (!err && response.statusCode == 200){
-        callback(null, _.extend({}, imageSrc, body);
+        callback(null, _.extend({}, imageSrc, body));
       }else{
         callback(err||response.statusCode||cfg.NOK);
       }
