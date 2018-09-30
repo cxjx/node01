@@ -1,11 +1,10 @@
-const { db, pgp } = require('../utils/db');
+const { db, pgp, cs_url } = require('../utils/db');
 const cfg = require('../config/config');
 
 /* Multi-row insert */
 function multi_insert (values, callback) {
-  const cs = new pgp.helpers.ColumnSet(['name'], {table: cfg.URL_TABLE_NAME});
   // generating a multi-row insert query:
-  const query = pgp.helpers.insert(values, cs);
+  const query = pgp.helpers.insert(values, cs_url);
   // executing the query:
   db.none(query)
     .then(data => {

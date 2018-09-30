@@ -7,6 +7,12 @@ module.exports = {
   NOK: 'failed',
   EMPTY: 'isEmptyArray',
   asyncParalelLimit: 5,
+  retryOpt: {times: 3, interval: 200},
+  MinPixel: 500,
+  ImgReg: /\.(jpe?g)(\?.*)?/,
+  analysisAPI: 'http://localhost:1080/evaluation',
+  // database connection:
+  dbConnection: 'postgresql://postgres:root123@localhost:5432/test',
   /* https://github.com/website-scraper/node-website-scraper/blob/master/lib/config/defaults.js */
   scapeOptions: {
     directory: './tmp/download/',
@@ -57,11 +63,6 @@ module.exports = {
     resourceSaver: null,
     updateMissingSources: false,
   },
-  MinPixel: 500,
-  ImgReg: /\.(jpe?g)(\?.*)?/,
-  analysisAPI: 'http://localhost:1080/evaluation',
-  // database connection:
-  dbConnection: 'postgresql://postgres:root123@localhost:5432/test',
   URL_TABLE_NAME: URL_TABLE_NAME,
   IMAGE_TABLE_NAME: IMAGE_TABLE_NAME,
   SQL_CREATE_TABLE_DOMAIN: 'CREATE TABLE IF NOT EXISTS "'+URL_TABLE_NAME+'" \

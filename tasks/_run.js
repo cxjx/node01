@@ -1,9 +1,9 @@
 const async = require('async');
-
+const _ = require('lodash');
 const cfg = require('../config/config');
-const _getImageSrc = require('./getImageSrc');
-const _getAnalysisResults = require('./getAnalysisResults');
-const _insertTableImage = require('./insertTableImage');
+const _getImageSrc = require('./_getImageSrc');
+const _getAnalysisResults = require('./_getAnalysisResults');
+const _insertTableImage = require('./_insertTableImage');
 
 // input = [
 //   {id: 1, name: 'http://letsdothis.com'},
@@ -14,7 +14,7 @@ const _insertTableImage = require('./insertTableImage');
 //     getImageSrc: [Object],
 //     getAnalysisResults: [Object],
 //     insertTableImage: 'isEmptyArray'
-//   }
+//   },
 //   {
 //     getImageSrc: [Object],
 //     getAnalysisResults: [Object],
@@ -22,34 +22,42 @@ const _insertTableImage = require('./insertTableImage');
 //   }
 // ];
 
-const _run = function (domains, callback_auto) {
+const _run = function (domains, callback) {
 
   let tasks = domains.map( domain => {
-    return function (callback_parallel) {
-      
+    return function (callback) {
       async.auto({
         getImageSrc: function (callback) {
-          // [{id: 1, name: 'http://letsdothis.com'}]
-          _getImageSrc([domain], callback);
+          // domain = {
+          //   id: 1,
+          //   name: 'http://letsdothis.com',
+          // };
+          _getImageSrc(domain, callback);
         },
         getAnalysisResults: ['getImageSrc', function (results, callback) {
-          // {'1': ['https://d178fu9mi2dmkb.cloudfront.net/webapp-media/images/logo-social.jpg']}
-          const imageUrls = results.getImageSrc;
+          // imageSrc = {
+          //   id: 1,
+          //   name: 'http://letsdothis.com',
+          //   imageSrc: [ 'https://d178fu9mi2dmkb.cloudfront.net/webapp-media/images/logo-social.jpg' ],
+          // };
+          const imageSrc = results.getImageSrc;
 
-          _getAnalysisResults(imageUrls, callback);
+          _getAnalysisResults(imageSrc, callback);
         }],
         insertTableImage: ['getAnalysisResults', function (results, callback) {
-          const values = [];
+          // res = {
+          //   id: 1,
+          //   name: 'http://letsdothis.com',
+          //   imageSrc: [ 'https://d178fu9mi2dmkb.cloudfront.net/webapp-media/images/logo-social.jpg' ],
+          //   result: '[{"https://d178fu9mi2dmkb.cloudfront.net/webapp-media/images/logo-social.jpg": {"Content": "0.428912", "Light": "0.231964", "MotionBlur": "0.0203646", "score": "0.730122", "VividColor": "0.493357", "Object": "0.122761", "Symmetry": "0.0761009", "DoF": "0.0578996", "ColorHarmony": "0.397761", "Repetition": "0.212869", "BalancingElement": "0.185691", "RuleOfThirds": "0.108831"}}]',
+          // };
           const res = results.getAnalysisResults;
-          const ids = Object.keys(res);
-          ids.forEach(id => {
-            let data = JSON.parse(res[id].result);
-            data = data.map(o => {
-              for(let k in o){
-                return Object.assign({urlid: id, imgurl: k}, o[k])
-              }
-            });
-            values.push(...data);
+          const urlid = res.id;
+          const data = JSON.parse(res.result);
+          const values = data.map(o => {
+            for(let k in o){
+              return _.extend({}, {urlid: urlid, imgurl: k}, o[k]);
+            }
           });
 
           if(values.length > 0){
@@ -62,26 +70,23 @@ const _run = function (domains, callback_auto) {
       function(err, results) {
         // results is now equal to {'one': 1, 'two': 2}
         if(err){
-          callback_parallel(err||cfg.NOK);
+          callback(err||cfg.NOK);
         }else{
-          console.log(`${domain.name} DONE, ${JSON.stringify(results.insertTableImage)}`);
-          callback_parallel(null, results);
+          console.log(`[${domain.id}|${domain.name}] DONE: ${JSON.stringify(results.insertTableImage)}`);
+          callback(null, results);
         }
       });
-
     };
   });
 
   async.parallelLimit(tasks, cfg.asyncParalelLimit, function(err, results) {
     // results is now equal to ['one', 'two']
     if(err){
-      callback_auto(err||cfg.NOK);
+      callback(err||cfg.NOK);
     }else{
-      callback_auto(null, results);
+      callback(null, results);
     }
   });
-
-
 };
 
 module.exports = _run;
