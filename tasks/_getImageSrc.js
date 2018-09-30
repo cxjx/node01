@@ -22,7 +22,6 @@ const _getImageSrc = function (domain, callback) {
       directory: directory,
       onResourceSaved: (resource) => {
         if(cfg.ImgReg.test(resource.filename)){
-          console.log(process.cwd());
           const basePath = path.resolve(process.cwd(), directory);
           const fileName = path.join(basePath, resource.filename);
           const imgSize = images(fileName).size();
@@ -42,7 +41,7 @@ const _getImageSrc = function (domain, callback) {
         if(imageSrc.length <= 0){
           callback(cfg.EMPTY);
         }else{
-          callback(null, );
+          callback(null, imageSrc);
         }
       }
     });
@@ -53,7 +52,7 @@ const _getImageSrc = function (domain, callback) {
     // do something with the result
     if(err){
       if(err === cfg.EMPTY){
-        callback(err, _.extend({}, domain, {imageSrc: []}));
+        callback(null, _.extend({}, domain, {imageSrc: []}));
       }else{
         callback(err);
       }
