@@ -51,11 +51,7 @@ const _getImageSrc = function (domain, callback) {
   async.retry(cfg.retryOpt, task, function(err, results) {
     // do something with the result
     if(err){
-      if(err === cfg.EMPTY){
-        callback(null, _.extend({}, domain, {imageSrc: []}));
-      }else{
-        callback(err);
-      }
+      callback(null, _.extend({}, domain, {imageSrc: []}));
     }else{
       callback(null, _.extend({}, domain, {imageSrc: results}));
     }

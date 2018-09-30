@@ -22,7 +22,7 @@ const _getAnalysisResults = function (imageSrc, callback) {
   const task = function (callback) {
     request.get({url: url, body: data, json: true}, (err, response, body) => {
       if (!err && response.statusCode == 200){
-        callback(null, _.extend({}, imageSrc, body));
+        callback(null, body);
       }else{
         callback(err||response.statusCode||cfg.NOK);
       }
@@ -32,7 +32,11 @@ const _getAnalysisResults = function (imageSrc, callback) {
   // try calling apiMethod 3 times
   async.retry(cfg.retryOpt, task, function(err, results) {
     // do something with the result
-    callback(err, results);
+    if(err){
+      callback(null, _.extend({}, imageSrc, {result: '[]'}));
+    }else{
+      callback(null, _.extend({}, imageSrc, results));
+    }
   });
 };
 
