@@ -42,7 +42,11 @@ const _run = function (domains, callback) {
           // };
           const imageSrc = results.getImageSrc;
 
-          _getAnalysisResults(imageSrc, callback);
+          if(imageSrc.imageSrc.length > 0){
+            _getAnalysisResults(imageSrc, callback);
+          }else{
+            callback(null, cfg.EMPTY);
+          }
         }],
         insertTableImage: ['getAnalysisResults', function (results, callback) {
           // res = {
