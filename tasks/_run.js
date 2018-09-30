@@ -45,7 +45,7 @@ const _run = function (domains, callback) {
           if(imageSrc.imageSrc.length > 0){
             _getAnalysisResults(imageSrc, callback);
           }else{
-            callback(null, cfg.EMPTY);
+            callback(cfg.EMPTY);
           }
         }],
         insertTableImage: ['getAnalysisResults', function (results, callback) {
