@@ -13,5 +13,5 @@ const db = pgp('postgresql://postgres:root123@localhost:5432/test');
 
 
 # start
-node --max-old-space-size=4096 index.js
+node --max-old-space-size=4096 index.js | tee debug.log
 
