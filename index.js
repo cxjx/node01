@@ -54,5 +54,5 @@ async.auto({
 }, function(err, results) {
   pgp.end();
   console.log('err = ', err);
-  console.log('results = ', results);
+  // console.log('results = ', results);
 });
