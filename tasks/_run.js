@@ -45,7 +45,7 @@ const _run = function (domains, callback) {
           if(imageSrc.imageSrc.length > 0){
             _getAnalysisResults(imageSrc, callback);
           }else{
-            callback(cfg.EMPTY);
+            callback(null, cfg.EMPTY);
           }
         }],
         insertTableImage: ['getAnalysisResults', function (results, callback) {
@@ -56,18 +56,21 @@ const _run = function (domains, callback) {
           //   result: '[{"https://d178fu9mi2dmkb.cloudfront.net/webapp-media/images/logo-social.jpg": {"Content": "0.428912", "Light": "0.231964", "MotionBlur": "0.0203646", "score": "0.730122", "VividColor": "0.493357", "Object": "0.122761", "Symmetry": "0.0761009", "DoF": "0.0578996", "ColorHarmony": "0.397761", "Repetition": "0.212869", "BalancingElement": "0.185691", "RuleOfThirds": "0.108831"}}]',
           // };
           const res = results.getAnalysisResults;
-          const urlid = res.id;
-          const data = JSON.parse(res.result);
-          const values = data.map(o => {
-            for(let k in o){
-              return _.extend({}, {urlid: urlid, imgurl: k}, o[k]);
-            }
-          });
-
-          if(values.length > 0){
-            _insertTableImage(values, callback)
-          }else{
+          if(res === cfg.EMPTY){
             callback(null, cfg.EMPTY);
+          }else{
+            const urlid = res.id;
+            const data = JSON.parse(res.result);
+            const values = data.map(o => {
+              for(let k in o){
+                return _.extend({}, {urlid: urlid, imgurl: k}, o[k]);
+              }
+            });
+            if(values.length > 0){
+              _insertTableImage(values, callback)
+            }else{
+              callback(null, cfg.EMPTY);
+            }
           }
         }],
       },
