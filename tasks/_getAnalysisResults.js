@@ -17,7 +17,10 @@ const cfg = require('../config/config');
 
 const _getAnalysisResults = function (imageSrc, callback) {
   const url = cfg.analysisAPI;
-  const data = imageSrc.imageSrc;
+  const data = {
+    'standardize': 'True',
+    'urls': imageSrc.imageSrc
+  };
 
   const task = function (callback) {
     request.get({url: url, body: data, json: true}, (err, response, body) => {
