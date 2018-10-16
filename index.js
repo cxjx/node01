@@ -28,7 +28,7 @@ async.auto({
     _getDomainsFromFile(filePath, callback);
   },
   insertDomains: ['initTables', 'getDomainsFromFile', function(results, callback){
-    const values = results.getDomainsFromFile.map( domain => { return {name: domain} });
+    const values = results.getDomainsFromFile.map( domain => { return {url: domain} });
 
     _insertTableUrl(values, callback);
   }],
@@ -38,7 +38,7 @@ async.auto({
   readDomains: ['getDomainsFromFile', 'getDomainsFromDB', function (results, callback) {
     const domainsFromFile = results.getDomainsFromFile;
     const domainsFromDB = results.getDomainsFromDB;
-    const domains = domainsFromDB.filter( domain => domainsFromFile.indexOf(domain.name) >= 0 );
+    const domains = domainsFromDB.filter( domain => domainsFromFile.indexOf(domain.url) >= 0 );
 
     if(domains.length > 0){
       callback(null, domains);

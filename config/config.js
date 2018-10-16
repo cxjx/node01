@@ -74,27 +74,27 @@ module.exports = {
   SQL_CREATE_TABLE_DOMAIN: 'CREATE TABLE IF NOT EXISTS "'+URL_TABLE_NAME+'" \
     (\
       "id" SERIAL PRIMARY KEY, \
-      "name" varchar(64) UNIQUE NOT NULL\
+      "url" varchar(64) UNIQUE NOT NULL\
     )',
   SQL_CREATE_TABLE_ANALYSIS: 'CREATE TABLE IF NOT EXISTS "'+IMAGE_TABLE_NAME+'" \
     (\
       "id" SERIAL PRIMARY KEY, \
       "urlid" int REFERENCES "'+URL_TABLE_NAME+'"("id"), \
       "imgurl" varchar(512) UNIQUE NOT NULL, \
-      "MotionBlur" real, \
-      "Light" real, \
-      "ColorHarmony" real, \
-      "Symmetry" real, \
-      "VividColor" real, \
-      "Repetition" real, \
-      "Content" real, \
-      "DoF" real, \
-      "Object" real, \
-      "RuleOfThirds" real, \
-      "BalancingElement" real, \
+      "motion_blur" real, \
+      "light" real, \
+      "color_harmony" real, \
+      "symmetry" real, \
+      "vivid_color" real, \
+      "repetition" real, \
+      "content" real, \
+      "do_f" real, \
+      "object" real, \
+      "rule_of_thirds" real, \
+      "balancing_element" real, \
       "score" real\
     )',
   SQL_SELECT_FROM_DOMAIN: 'select * from '+URL_TABLE_NAME,
-  SQL_INSERT_INTO_DOMAIN: 'insert into '+URL_TABLE_NAME+'(${this:name}) values(${this:csv}) on conflict(name) do nothing',
-  SQL_INSERT_INTO_ANALYSIS: 'insert into '+IMAGE_TABLE_NAME+'(${this:name}) values(${this:csv}) on conflict(imgurl) do nothing',
+  SQL_INSERT_INTO_DOMAIN: 'insert into '+URL_TABLE_NAME+'(${this:url}) values(${this:csv}) on conflict(url) do nothing',
+  SQL_INSERT_INTO_ANALYSIS: 'insert into '+IMAGE_TABLE_NAME+'(${this:url}) values(${this:csv}) on conflict(imgurl) do nothing',
 }

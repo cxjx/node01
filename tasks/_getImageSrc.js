@@ -6,19 +6,19 @@ const scrape = require('website-scraper');
 const images = require("images");
 const cfg = require('../config/config');
 
-// input = {id: 1, name: 'http://letsdothis.com'};
+// input = {id: 1, url: 'http://letsdothis.com'};
 // output = {
 //   id: 1,
-//   name: 'http://letsdothis.com',
+//   url: 'http://letsdothis.com',
 //   imageSrc: [ 'https://d178fu9mi2dmkb.cloudfront.net/webapp-media/images/logo-social.jpg' ],
 // };
 const _getImageSrc = function (domain, callback) {
 
   const task = function (callback) {
     let imageSrc = [];
-    let directory = './tmp/' + domain.name.split('http://')[1];
+    let directory = './tmp/' + domain.url.split('http://')[1];
     let options = _.extend({}, cfg.scapeOptions, {
-      urls: domain.name,
+      urls: domain.url,
       directory: directory,
       onResourceSaved: (resource) => {
         if(cfg.ImgReg.test(resource.filename)){
@@ -35,6 +35,7 @@ const _getImageSrc = function (domain, callback) {
 
     fs.removeSync(directory);
     scrape(options, (err, data) => {
+      fs.removeSync(directory);
       if(err){
         callback(err);
       }else{

@@ -6,8 +6,8 @@ const _getAnalysisResults = require('./_getAnalysisResults');
 const _insertTableImage = require('./_insertTableImage');
 
 // input = [
-//   {id: 1, name: 'http://letsdothis.com'},
-//   {id: 2, name: 'http://theathletic.com'}
+//   {id: 1, url: 'http://letsdothis.com'},
+//   {id: 2, url: 'http://theathletic.com'}
 // ];
 // output = [
 //   {
@@ -30,14 +30,14 @@ const _run = function (domains, callback) {
         getImageSrc: function (callback) {
           // domain = {
           //   id: 1,
-          //   name: 'http://letsdothis.com',
+          //   url: 'http://letsdothis.com',
           // };
           _getImageSrc(domain, callback);
         },
         getAnalysisResults: ['getImageSrc', function (results, callback) {
           // imageSrc = {
           //   id: 1,
-          //   name: 'http://letsdothis.com',
+          //   url: 'http://letsdothis.com',
           //   imageSrc: [ 'https://d178fu9mi2dmkb.cloudfront.net/webapp-media/images/logo-social.jpg' ],
           // };
           const imageSrc = results.getImageSrc;
@@ -51,7 +51,7 @@ const _run = function (domains, callback) {
         insertTableImage: ['getAnalysisResults', function (results, callback) {
           // res = {
           //   id: 1,
-          //   name: 'http://letsdothis.com',
+          //   url: 'http://letsdothis.com',
           //   imageSrc: [ 'https://d178fu9mi2dmkb.cloudfront.net/webapp-media/images/logo-social.jpg' ],
           //   result: '[{"https://d178fu9mi2dmkb.cloudfront.net/webapp-media/images/logo-social.jpg": {"Content": "0.428912", "Light": "0.231964", "MotionBlur": "0.0203646", "score": "0.730122", "VividColor": "0.493357", "Object": "0.122761", "Symmetry": "0.0761009", "DoF": "0.0578996", "ColorHarmony": "0.397761", "Repetition": "0.212869", "BalancingElement": "0.185691", "RuleOfThirds": "0.108831"}}]',
           // };
@@ -63,7 +63,12 @@ const _run = function (domains, callback) {
             const data = JSON.parse(res.result);
             const values = data.map(o => {
               for(let k in o){
-                return _.extend({}, {urlid: urlid, imgurl: k}, o[k]);
+                let _o = o[k];
+                let out = {};
+                for(let _k in _o){
+                  out[(_k.slice(0,1).toLowerCase()+_k.slice(1)).replace(/([A-Z])/g,"_$1").toLowerCase()] = _o[_k];
+                }
+                return _.extend({}, {urlid: 1, imgurl: k}, out);
               }
             });
             if(values.length > 0){
@@ -79,7 +84,7 @@ const _run = function (domains, callback) {
         if(err){
           callback(err||cfg.NOK);
         }else{
-          console.log(`[${domain.id}|${domain.name}] DONE: ${JSON.stringify(results.insertTableImage)}`);
+          console.log(`[${domain.id}|${domain.url}] DONE: ${JSON.stringify(results.insertTableImage)}`);
           callback(null, results);
         }
       });

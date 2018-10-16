@@ -9,20 +9,20 @@ const cfg = require('../config/config');
 const db = pgp(cfg.dbConnection);
 
 
-const cs_url = new pgp.helpers.ColumnSet(['name'], {table: cfg.URL_TABLE_NAME});
+const cs_url = new pgp.helpers.ColumnSet(['url'], {table: cfg.URL_TABLE_NAME});
 const cs_image = new pgp.helpers.ColumnSet([
   'imgurl',
-  'MotionBlur',
-  'Light',
-  'ColorHarmony',
-  'Symmetry',
-  'VividColor',
-  'Repetition',
-  'Content',
-  'DoF',
-  'Object',
-  'RuleOfThirds',
-  'BalancingElement',
+  'motion_blur',
+  'light',
+  'color_harmony',
+  'symmetry',
+  'vivid_color',
+  'repetition',
+  'content',
+  'do_f',
+  'object',
+  'rule_of_thirds',
+  'balancing_element',
   'score',
 ], {table: cfg.IMAGE_TABLE_NAME});
 
