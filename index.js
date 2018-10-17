@@ -8,8 +8,8 @@ const _initTables = require('./tasks/initTables');
 const _getUrlsFromFile = require('./tasks/getUrlsFromFile');
 const _setUrlsToDB = require('./tasks/setUrlsToDB');
 const _getUrlsFromDB = require('./tasks/getUrlsFromDB');
-const _getResults = require('./getResults');
-const _setResultsToDB = require('./setResultsToDB');
+const _getResults = require('./tasks/getResults');
+const _setResultsToDB = require('./tasks/setResultsToDB');
 
 async.auto({
   initTables: function (callback) {
@@ -29,7 +29,7 @@ async.auto({
     _getUrlsFromDB(callback);
   }],
   getUrls: ['getUrlsFromFile', 'getUrlsFromDB', function (results, callback) {
-    const urlsFromFile = results.getUrlsFromFile;
+    const urlsFromFile = results.getUrlsFromFile.map( url => url.url);
     const urlsFromDB = results.getUrlsFromDB;
     const urls = urlsFromDB.filter( url => urlsFromFile.indexOf(url.url) >= 0 );
 
