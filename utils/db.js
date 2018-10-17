@@ -8,10 +8,14 @@ const cfg = require('../config/config');
 // Creating a new database instance from the connection details:
 const db = pgp(cfg.dbConnection);
 
-
-const cs_url = new pgp.helpers.ColumnSet(['url'], {table: cfg.URL_TABLE_NAME});
+const cs_url = new pgp.helpers.ColumnSet([
+  'provider_id',
+  'provider_status',
+  'shoottype',
+  'url',
+], {table: cfg.URL_TABLE_NAME});
 const cs_image = new pgp.helpers.ColumnSet([
-  'imgurl',
+  'url_id',
   'motion_blur',
   'light',
   'color_harmony',

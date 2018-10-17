@@ -1,6 +1,41 @@
 
-const URL_TABLE_NAME = 'url';
-const IMAGE_TABLE_NAME = 'image';
+const URL_TABLE_NAME = 'url2';
+const IMAGE_TABLE_NAME = 'image2';
+
+const URL_TABLE_FIELDS = [
+  '"id" SERIAL PRIMARY KEY',
+  '"provider_id" varchar(64) NOT NULL',
+  '"provider_status" varchar(32) NOT NULL',
+  '"shoottype" varchar(32) NOT NULL',
+  '"url" varchar(512) UNIQUE NOT NULL',
+];
+const IMAGE_TABLE_FIELDS = [
+  '"id" SERIAL PRIMARY KEY',
+  '"url_id" int REFERENCES "'+URL_TABLE_NAME+'"("id") UNIQUE NOT NULL',
+  '"motion_blur" real',
+  '"light" real',
+  '"color_harmony" real',
+  '"symmetry" real',
+  '"vivid_color" real',
+  '"repetition" real',
+  '"content" real',
+  '"do_f" real',
+  '"object" real',
+  '"rule_of_thirds" real',
+  '"balancing_element" real',
+  '"score" real',
+];
+
+function gen_create_table_sql(table_name, table_fields) {
+  var fields = table_fields.join(',');
+  return `CREATE TABLE IF NOT EXISTS "${table_name}" (${fields})`;
+}
+function gen_insert_sql(table_name, conflict_field) {
+  return 'insert into '+table_name+'(${this:name}) values(${this:csv}) on conflict('+conflict_field+') do nothing';
+}
+function gen_select_sql(table_name){
+  return `select * from ${table_name}`;
+}
 
 module.exports = {
   OK: 'success',
@@ -71,30 +106,9 @@ module.exports = {
   },
   URL_TABLE_NAME: URL_TABLE_NAME,
   IMAGE_TABLE_NAME: IMAGE_TABLE_NAME,
-  SQL_CREATE_TABLE_DOMAIN: 'CREATE TABLE IF NOT EXISTS "'+URL_TABLE_NAME+'" \
-    (\
-      "id" SERIAL PRIMARY KEY, \
-      "url" varchar(64) UNIQUE NOT NULL\
-    )',
-  SQL_CREATE_TABLE_ANALYSIS: 'CREATE TABLE IF NOT EXISTS "'+IMAGE_TABLE_NAME+'" \
-    (\
-      "id" SERIAL PRIMARY KEY, \
-      "urlid" int REFERENCES "'+URL_TABLE_NAME+'"("id"), \
-      "imgurl" varchar(512) UNIQUE NOT NULL, \
-      "motion_blur" real, \
-      "light" real, \
-      "color_harmony" real, \
-      "symmetry" real, \
-      "vivid_color" real, \
-      "repetition" real, \
-      "content" real, \
-      "do_f" real, \
-      "object" real, \
-      "rule_of_thirds" real, \
-      "balancing_element" real, \
-      "score" real\
-    )',
-  SQL_SELECT_FROM_DOMAIN: 'select * from '+URL_TABLE_NAME,
-  SQL_INSERT_INTO_DOMAIN: 'insert into '+URL_TABLE_NAME+'(${this:name}) values(${this:csv}) on conflict(url) do nothing',
-  SQL_INSERT_INTO_ANALYSIS: 'insert into '+IMAGE_TABLE_NAME+'(${this:name}) values(${this:csv}) on conflict(imgurl) do nothing',
+  SQL_CREATE_TABLE_DOMAIN: gen_create_table_sql(URL_TABLE_NAME, URL_TABLE_FIELDS),
+  SQL_CREATE_TABLE_ANALYSIS: gen_create_table_sql(IMAGE_TABLE_NAME, IMAGE_TABLE_FIELDS),
+  SQL_SELECT_FROM_DOMAIN: gen_select_sql(URL_TABLE_NAME),
+  SQL_INSERT_INTO_DOMAIN: gen_insert_sql(URL_TABLE_NAME, 'url'),
+  SQL_INSERT_INTO_ANALYSIS: gen_insert_sql(IMAGE_TABLE_NAME, 'url_id'),
 }

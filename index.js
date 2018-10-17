@@ -1,55 +1,72 @@
 require('events').EventEmitter.defaultMaxListeners = 100;
+const _ = require('lodash');
 const async = require('async');
 
 const { pgp } = require('./utils/db');
 const cfg = require('./config/config');
-const _removeDir = require('./tasks/removeDir');
 const _initTables = require('./tasks/initTables');
-const _getDomainsFromFile = require('./tasks/getDomainsFromFile');
-const _insertTableUrl = require('./tasks/insertTableUrl');
-const _getDomainsFromDB = require('./tasks/getDomainsFromDB');
-// const _getImageSrc = require('./tasks/getImageSrc');
-// const _getAnalysisResults = require('./tasks/getAnalysisResults');
-// const _insertTableImage = require('./tasks/insertTableImage');
-const _run = require('./tasks/_run');
+const _getUrlsFromFile = require('./tasks/getUrlsFromFile');
+const _setUrlsToDB = require('./tasks/setUrlsToDB');
+const _getUrlsFromDB = require('./tasks/getUrlsFromDB');
+const _getResults = require('./getResults');
+const _setResultsToDB = require('./setResultsToDB');
 
 async.auto({
-  removeDir: function (callback) {
-    const dir = cfg.scapeOptions.directory;
-
-    _removeDir(dir, callback);
-  },
   initTables: function (callback) {
     _initTables(callback);
   },
-  getDomainsFromFile: function (callback) {
-    const filePath = './config/Domains.js';
+  getUrlsFromFile: function (callback) {
+    const filePath = './config/provider_images.csv';
 
-    _getDomainsFromFile(filePath, callback);
+    _getUrlsFromFile(filePath, callback);
   },
-  insertDomains: ['initTables', 'getDomainsFromFile', function(results, callback){
-    const values = results.getDomainsFromFile.map( domain => { return {url: domain} });
+  setUrlsToDB: ['initTables', 'getUrlsFromFile', function(results, callback){
+    const values = results.getUrlsFromFile;
 
-    _insertTableUrl(values, callback);
+    _setUrlsToDB(values, callback);
   }],
-  getDomainsFromDB: ['insertDomains', function (results, callback) {
-    _getDomainsFromDB(callback);
+  getUrlsFromDB: ['setUrlsToDB', function (results, callback) {
+    _getUrlsFromDB(callback);
   }],
-  readDomains: ['getDomainsFromFile', 'getDomainsFromDB', function (results, callback) {
-    const domainsFromFile = results.getDomainsFromFile;
-    const domainsFromDB = results.getDomainsFromDB;
-    const domains = domainsFromDB.filter( domain => domainsFromFile.indexOf(domain.url) >= 0 );
+  getUrls: ['getUrlsFromFile', 'getUrlsFromDB', function (results, callback) {
+    const urlsFromFile = results.getUrlsFromFile;
+    const urlsFromDB = results.getUrlsFromDB;
+    const urls = urlsFromDB.filter( url => urlsFromFile.indexOf(url.url) >= 0 );
 
-    if(domains.length > 0){
-      callback(null, domains);
+    if(urls.length > 0){
+      callback(null, urls);
     }else{
       callback(cfg.EMPTY);
     }
   }],
-  run: ['removeDir', 'readDomains', function (results, callback) {
-    const domains = results.readDomains;
+  getResults: ['getUrls', function (results, callback) {
+    const urls = results.getUrls.map( url =>  url.url );
 
-    _run(domains, callback);
+    if(urls.length > 0){
+      _getResults(urls, callback);
+    }else{
+      callback(null, cfg.EMPTY);
+    }
+  }],
+  setResultsToDB: ['getResults', function (results, callback) {
+    const urls = results.getUrls;
+    const data = JSON.parse(results.getResults.result).reduce((r,e) => _.extend(r,e), {});
+
+    const values =  urls.map(url => {
+      let d = data[url.url];
+      let out = {};
+      for(let k in d){
+        out[(k.slice(0,1).toLowerCase()+k.slice(1)).replace(/([A-Z])/g,"_$1").toLowerCase()] = d[k];
+      }
+      console.log(`[${url.id}|${url.url}] ${JSON.stringify(out)}`);
+      return _.extend({url_id: url.id}, out);
+    });
+
+    if(values.length > 0){
+      _setResultsToDB(values, callback)
+    }else{
+      callback(null, cfg.EMPTY);
+    }
   }],
 }, function(err, results) {
   pgp.end();
