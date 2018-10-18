@@ -1,6 +1,16 @@
 
 const URL_TABLE_NAME = 'url2';
 const IMAGE_TABLE_NAME = 'image2';
+const URL_NUM_PER_TASK = 10;
+const TASK_CONCURRENCY = 10;
+const retryOpt = {times: 5, interval: 200};
+// retryOpt = {
+//   times: 5,
+//   interval: function(retryCount) {
+//     return 50 * Math.pow(2, retryCount);
+//   }
+// };
+const asyncParalelLimit = 5;
 
 const URL_TABLE_FIELDS = [
   '"id" SERIAL PRIMARY KEY',
@@ -45,16 +55,10 @@ module.exports = {
   OK: 'success',
   NOK: 'failed',
   EMPTY: 'isEmptyArray',
-  urlPerTask: 5,
-  taskConcurrency: 2,
-  asyncParalelLimit: 5,
-  retryOpt: {times: 3, interval: 200},
-  // retryOpt: {
-  //   times: 5,
-  //   interval: function(retryCount) {
-  //     return 50 * Math.pow(2, retryCount);
-  //   }
-  // },
+  urlPerTask: URL_NUM_PER_TASK,
+  taskConcurrency: TASK_CONCURRENCY,
+  asyncParalelLimit: asyncParalelLimit,
+  retryOpt: retryOpt,
   analysisAPI: 'http://35.202.251.156:1080/evaluation',
   // database connection:
   dbConnection: 'postgresql://postgres:root123@localhost:5432/test',
