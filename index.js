@@ -22,28 +22,6 @@ async.auto({
 
     _getUrlsFromFile(filePath, callback);
   },
-  // setUrlsToDB: ['initTables', 'getUrlsFromFile', function(results, callback){
-  //   console.log('setUrlsToDB......');
-  //   const values = results.getUrlsFromFile;
-
-  //   _setUrlsToDB(values, callback);
-  // }],
-  // getUrlsFromDB: ['setUrlsToDB', function (results, callback) {
-  //   console.log('getUrlsFromDB......');
-  //   _getUrlsFromDB(callback);
-  // }],
-  // getUrls: ['getUrlsFromFile', 'getUrlsFromDB', function (results, callback) {
-  //   console.log('getUrls......');
-  //   const urlsFromFile = results.getUrlsFromFile.map( url => url.url);
-  //   const urlsFromDB = results.getUrlsFromDB;
-  //   const urls = urlsFromDB.filter( url => urlsFromFile.indexOf(url.url) >= 0 );
-
-  //   if(urls.length > 0){
-  //     callback(null, urls);
-  //   }else{
-  //     callback(cfg.EMPTY);
-  //   }
-  // }],
   runQueue: ['initTables', 'getUrlsFromFile', function (results, callback) {
     console.log('runQueue......');
     const urls = results.getUrlsFromFile;
@@ -51,16 +29,13 @@ async.auto({
 
     const queue = async.queue(function(task, callback) {
       /* task.run(callback); */
-
       async.auto({
         setUrlsToDB: function(callback){
-          console.log('setUrlsToDB......');
           const values = task;
 
           _setUrlsToDB(values, callback);
         },
         getUrlsFromDB: ['setUrlsToDB', function (results, callback) {
-          console.log('getUrlsFromDB......');
           const urls = results.setUrlsToDB.reduce((r,e) => {
             return e.length ? (r.push(e[0]),r) : r;
           }, []);
@@ -70,11 +45,10 @@ async.auto({
         getResults: ['getUrlsFromDB', function (results, callback) {
           const urls = results.getUrlsFromDB;
 
-          if(urls.length > 0){
-            _getResults(urls, callback);
-          }else{
-            // callback(null, cfg.EMPTY);
+          if(urls.length == 0){
             callback(cfg.EMPTY);
+          }else{
+            _getResults(urls, callback);
           }
         }],
         setResultsToDB: ['getResults', function (results, callback) {
@@ -82,7 +56,7 @@ async.auto({
           const data = JSON.parse(results.getResults.result);
 
           if(data.length == 0){
-            callback(null, cfg.EMPTY);
+            callback(cfg.EMPTY);
           }else{
             const values = data.map(e => {
               for(let u in e){
