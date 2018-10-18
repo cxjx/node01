@@ -53,7 +53,7 @@ async.auto({
       /* task.run(callback); */
 
       async.auto({
-        setUrlsToDB: function(results, callback){
+        setUrlsToDB: function(callback){
           const values = task;
 
           _setUrlsToDB(values, callback);
@@ -65,7 +65,7 @@ async.auto({
           callback(null, urls);
           // _getUrlsFromDB(callback);
         }],
-        getResults: ['getUrlsFromDB', function (callback) {
+        getResults: ['getUrlsFromDB', function (results, callback) {
           const urls = results.getUrlsFromDB;
 
           if(urls.length > 0){
