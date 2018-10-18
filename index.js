@@ -41,7 +41,6 @@ async.auto({
     const urls = results.setUrlsToDB.reduce((r,e) => {
       return e.length ? (r.push(e[0]),r) : r;
     }, []);
-    console.log(urls);
 
     if(urls.length > 0){
       callback(null, urls);
