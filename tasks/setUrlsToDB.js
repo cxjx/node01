@@ -27,7 +27,7 @@ const setUrlsToDB = function (values, callback) {
       callback(null, data);
     })
     .catch(err => {
-      callback(err||cfg.NOK);
+      //callback(err||cfg.NOK);
     });
 };
 
