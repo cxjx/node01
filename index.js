@@ -51,7 +51,6 @@ async.auto({
     const tasks = _.chunk(urls, cfg.urlPerTask);
 
     const queue = async.queue(function(task, callback) {
-      console.log(`${task.id}|${task.url}`);
       /* task.run(callback); */
 
       async.auto({
@@ -75,12 +74,15 @@ async.auto({
           }else{
             const values = data.map(e => {
               for(let u in e){
+                const url = urls.find(e => e.url == u);
+
                 let out = {};
                 let v = e[u];
                 for(let k in v){
                   out[(k.slice(0,1).toLowerCase()+k.slice(1)).replace(/([A-Z])/g,"_$1").toLowerCase()] = v[k];
                 }
-                out.url_id = urls.find(e => e.url == u).id;
+                out.url_id = url.id;
+                console.log(`${url.url}|${JSON.stringify(out)}`);
                 return out;
               }
             });

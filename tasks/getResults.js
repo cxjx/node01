@@ -14,6 +14,7 @@ const getResults = function (urls, callback) {
       if (!err && response.statusCode == 200){
         callback(null, body);
       }else{
+        console.log(err);
         callback(err||response.statusCode||cfg.NOK);
       }
     });
