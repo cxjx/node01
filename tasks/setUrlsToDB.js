@@ -24,7 +24,7 @@ const setUrlsToDB = function (values, callback) {
     return t.batch(queries);
   })
     .then(data => {
-      callback(null, cfg.OK);
+      callback(null, data);
     })
     .catch(err => {
       callback(err||cfg.NOK);
