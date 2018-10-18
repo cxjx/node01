@@ -41,6 +41,8 @@ module.exports = {
   OK: 'success',
   NOK: 'failed',
   EMPTY: 'isEmptyArray',
+  urlPerTask: 3,
+  taskConcurrency: 1,
   asyncParalelLimit: 5,
   retryOpt: {times: 3, interval: 200},
   // retryOpt: {
@@ -51,7 +53,7 @@ module.exports = {
   // },
   MinPixel: 500,
   ImgReg: /\.(jpe?g)(\?.*)?/,
-  analysisAPI: 'http://localhost:1080/evaluation',
+  analysisAPI: 'http://35.202.251.156:1080/evaluation',
   // database connection:
   dbConnection: 'postgresql://postgres:root123@localhost:5432/test',
   /* https://github.com/website-scraper/node-website-scraper/blob/master/lib/config/defaults.js */

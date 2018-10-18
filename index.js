@@ -13,22 +13,27 @@ const _setResultsToDB = require('./tasks/setResultsToDB');
 
 async.auto({
   initTables: function (callback) {
+    console.log('initTables......');
     _initTables(callback);
   },
   getUrlsFromFile: function (callback) {
+    console.log('getUrlsFromFile......');
     const filePath = './config/provider_images.csv';
 
     _getUrlsFromFile(filePath, callback);
   },
   setUrlsToDB: ['initTables', 'getUrlsFromFile', function(results, callback){
+    console.log('setUrlsToDB......');
     const values = results.getUrlsFromFile;
 
     _setUrlsToDB(values, callback);
   }],
   getUrlsFromDB: ['setUrlsToDB', function (results, callback) {
+    console.log('getUrlsFromDB......');
     _getUrlsFromDB(callback);
   }],
   getUrls: ['getUrlsFromFile', 'getUrlsFromDB', function (results, callback) {
+    console.log('getUrls......');
     const urlsFromFile = results.getUrlsFromFile.map( url => url.url);
     const urlsFromDB = results.getUrlsFromDB;
     const urls = urlsFromDB.filter( url => urlsFromFile.indexOf(url.url) >= 0 );
@@ -39,34 +44,66 @@ async.auto({
       callback(cfg.EMPTY);
     }
   }],
-  getResults: ['getUrls', function (results, callback) {
-    const urls = results.getUrls.map( url =>  url.url );
-
-    if(urls.length > 0){
-      _getResults(urls, callback);
-    }else{
-      callback(null, cfg.EMPTY);
-    }
-  }],
-  setResultsToDB: ['getResults', function (results, callback) {
+  runQueue: ['getUrls', function (results, callback) {
+    console.log('runQueue......');
     const urls = results.getUrls;
-    const data = JSON.parse(results.getResults.result).reduce((r,e) => _.extend(r,e), {});
 
-    const values =  urls.map(url => {
-      let d = data[url.url];
-      let out = {};
-      for(let k in d){
-        out[(k.slice(0,1).toLowerCase()+k.slice(1)).replace(/([A-Z])/g,"_$1").toLowerCase()] = d[k];
-      }
-      console.log(`[${url.id}|${url.url}] ${JSON.stringify(out)}`);
-      return _.extend({url_id: url.id}, out);
+    const tasks = _.chunk(urls, cfg.urlPerTask);
+
+    const queue = async.queue(function(task, callback) {
+      /* task.run(callback); */
+
+      async.auto({
+        getResults: function (callback) {
+          console.log('getResults......');
+          const urls = task.map( e => e.url );
+
+          if(urls.length > 0){
+            _getResults(urls, callback);
+          }else{
+            callback(null, cfg.EMPTY);
+          }
+        },
+        setResultsToDB: ['getResults', function (results, callback) {
+          console.log('setResultsToDB......');
+          const urls = task;
+          const data = JSON.parse(results.getResults.result).reduce((r,e) => _.extend(r,e), {});
+
+          const values =  urls.map(url => {
+            let d = data[url.url];
+            let out = {};
+            for(let k in d){
+              out[(k.slice(0,1).toLowerCase()+k.slice(1)).replace(/([A-Z])/g,"_$1").toLowerCase()] = d[k];
+            }
+            // console.log(`[${url.id}|${url.url}] ${JSON.stringify(out)}`);
+            console.log(`[${url.id}|${url.url}]`);
+            return _.extend({url_id: url.id}, out);
+          });
+
+          if(values.length > 0){
+            _setResultsToDB(values, callback)
+          }else{
+            callback(null, cfg.EMPTY);
+          }
+        }],
+      },
+      function(err, results) {
+        // results is now equal to {'one': 1, 'two': 2}
+        callback(err, results);
+      });
+
+    }, cfg.taskConcurrency);
+
+    // add some items to the queue (batch-wise)
+    queue.push(tasks, function(...args) {
+      console.log(args);
     });
 
-    if(values.length > 0){
-      _setResultsToDB(values, callback)
-    }else{
-      callback(null, cfg.EMPTY);
-    }
+    // assign a callback
+    queue.drain = function(...args) {
+      console.log(args);
+      callback(null, 'done');
+    };
   }],
 }, function(err, results) {
   pgp.end();
