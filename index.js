@@ -22,16 +22,16 @@ async.auto({
 
     _getUrlsFromFile(filePath, callback);
   },
-  setUrlsToDB: ['initTables', 'getUrlsFromFile', function(results, callback){
-    console.log('setUrlsToDB......');
-    const values = results.getUrlsFromFile;
+  // setUrlsToDB: ['initTables', 'getUrlsFromFile', function(results, callback){
+  //   console.log('setUrlsToDB......');
+  //   const values = results.getUrlsFromFile;
 
-    _setUrlsToDB(values, callback);
-  }],
-  getUrlsFromDB: ['setUrlsToDB', function (results, callback) {
-    console.log('getUrlsFromDB......');
-    _getUrlsFromDB(callback);
-  }],
+  //   _setUrlsToDB(values, callback);
+  // }],
+  // getUrlsFromDB: ['setUrlsToDB', function (results, callback) {
+  //   console.log('getUrlsFromDB......');
+  //   _getUrlsFromDB(callback);
+  // }],
   // getUrls: ['getUrlsFromFile', 'getUrlsFromDB', function (results, callback) {
   //   console.log('getUrls......');
   //   const urlsFromFile = results.getUrlsFromFile.map( url => url.url);
@@ -44,26 +44,38 @@ async.auto({
   //     callback(cfg.EMPTY);
   //   }
   // }],
-  runQueue: ['getUrlsFromDB', function (results, callback) {
+  runQueue: ['initTables', 'getUrlsFromFile', function (results, callback) {
     console.log('runQueue......');
-    const urls = results.getUrlsFromDB;
+    const urls = results.getUrlsFromFile;
     const tasks = _.chunk(urls, cfg.urlPerTask);
 
     const queue = async.queue(function(task, callback) {
       /* task.run(callback); */
 
       async.auto({
-        getResults: function (callback) {
-          const urls = task;
+        setUrlsToDB: function(results, callback){
+          const values = task;
+
+          _setUrlsToDB(values, callback);
+        },
+        getUrlsFromDB: ['setUrlsToDB', function (results, callback) {
+          const urls = results.setUrlsToDB.reduce((r,e) => {
+            return e.length ? (r.push(e),r) : r;
+          }, []);
+          callback(null, urls);
+          // _getUrlsFromDB(callback);
+        }],
+        getResults: ['getUrlsFromDB', function (callback) {
+          const urls = results.getUrlsFromDB;
 
           if(urls.length > 0){
             _getResults(urls, callback);
           }else{
             callback(null, cfg.EMPTY);
           }
-        },
+        }],
         setResultsToDB: ['getResults', function (results, callback) {
-          const urls = task;
+          const urls = results.getUrlsFromDB;
           const data = JSON.parse(results.getResults.result);
 
           if(data.length == 0){
