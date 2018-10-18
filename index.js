@@ -56,7 +56,7 @@ async.auto({
       async.auto({
         getResults: function (callback) {
           console.log('getResults......');
-          const urls = task.map( e => e.url );
+          const urls = task;
 
           if(urls.length > 0){
             _getResults(urls, callback);
