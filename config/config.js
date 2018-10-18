@@ -31,11 +31,11 @@ function gen_create_table_sql(table_name, table_fields) {
   return `CREATE TABLE IF NOT EXISTS "${table_name}" (${fields})`;
 }
 function gen_insert_sql(table_name, conflict_field) {
-  if(table_name == URL_TABLE_NAME){
-    return 'insert into '+table_name+'(${this:name}) values(${this:csv}) on conflict('+conflict_field+') do nothing RETURNING *';
-  }else{
+  // if(table_name == URL_TABLE_NAME){
+  //   return 'insert into '+table_name+'(${this:name}) values(${this:csv}) on conflict('+conflict_field+') do nothing RETURNING *';
+  // }else{
     return 'insert into '+table_name+'(${this:name}) values(${this:csv}) on conflict('+conflict_field+') do nothing';
-  }
+  // }
 }
 function gen_select_sql(table_name){
   return `select * from ${table_name}`;
@@ -46,7 +46,7 @@ module.exports = {
   NOK: 'failed',
   EMPTY: 'isEmptyArray',
   urlPerTask: 20,
-  taskConcurrency: 50,
+  taskConcurrency: 10,
   asyncParalelLimit: 5,
   retryOpt: {times: 3, interval: 200},
   // retryOpt: {

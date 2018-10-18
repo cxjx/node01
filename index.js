@@ -28,19 +28,15 @@ async.auto({
 
     _setUrlsToDB(values, callback);
   }],
-  // getUrlsFromDB: ['setUrlsToDB', function (results, callback) {
-  //   console.log('getUrlsFromDB......');
-  //   _getUrlsFromDB(callback);
-  // }],
-  // getUrls: ['getUrlsFromFile', 'getUrlsFromDB', function (results, callback) {
-  getUrls: ['setUrlsToDB', function (results, callback) {
+  getUrlsFromDB: ['setUrlsToDB', function (results, callback) {
+    console.log('getUrlsFromDB......');
+    _getUrlsFromDB(callback);
+  }],
+  getUrls: ['getUrlsFromFile', 'getUrlsFromDB', function (results, callback) {
     console.log('getUrls......');
-    // const urlsFromFile = results.getUrlsFromFile.map( url => url.url);
-    // const urlsFromDB = results.getUrlsFromDB;
-    // const urls = urlsFromDB.filter( url => urlsFromFile.indexOf(url.url) >= 0 );
-    const urls = results.setUrlsToDB.reduce((r,e) => {
-      return e.length ? (r.push(e[0]),r) : r;
-    }, []);
+    const urlsFromFile = results.getUrlsFromFile.map( url => url.url);
+    const urlsFromDB = results.getUrlsFromDB;
+    const urls = urlsFromDB.filter( url => urlsFromFile.indexOf(url.url) >= 0 );
 
     if(urls.length > 0){
       callback(null, urls);
