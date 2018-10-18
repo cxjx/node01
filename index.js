@@ -32,12 +32,15 @@ async.auto({
   //   console.log('getUrlsFromDB......');
   //   _getUrlsFromDB(callback);
   // }],
-  getUrls: ['getUrlsFromFile'/*, 'getUrlsFromDB'*/, function (results, callback) {
+  // getUrls: ['getUrlsFromFile', 'getUrlsFromDB', function (results, callback) {
+  getUrls: ['setUrlsToDB', function (results, callback) {
     console.log('getUrls......');
     // const urlsFromFile = results.getUrlsFromFile.map( url => url.url);
     // const urlsFromDB = results.getUrlsFromDB;
     // const urls = urlsFromDB.filter( url => urlsFromFile.indexOf(url.url) >= 0 );
-    const urls = results.setUrlsToDB;
+    const urls = results.setUrlsToDB.reduce((r,e) => {
+      return e.id ? (r.push(e),r) : r;
+    }, []);
     console.log(urls);
 
     if(urls.length > 0){
@@ -81,7 +84,7 @@ async.auto({
                 for(let k in v){
                   out[(k.slice(0,1).toLowerCase()+k.slice(1)).replace(/([A-Z])/g,"_$1").toLowerCase()] = v[k];
                 }
-                out.url_id = urls.find(e => e.url == u)..id;
+                out.url_id = urls.find(e => e.url == u).id;
                 return out;
               }
             });
