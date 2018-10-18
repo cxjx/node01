@@ -51,6 +51,7 @@ async.auto({
     const tasks = _.chunk(urls, cfg.urlPerTask);
 
     const queue = async.queue(function(task, callback) {
+      console.log(`${task.id}|${task.url}`);
       /* task.run(callback); */
 
       async.auto({
@@ -96,7 +97,7 @@ async.auto({
 
     // add some items to the queue (batch-wise)
     queue.push(tasks, function(...args) {
-      console.log(args);
+      // console.log(args);
     });
 
     // assign a callback

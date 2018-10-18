@@ -24,7 +24,7 @@ const setResultsToDB = function (values, callback) {
     return t.batch(queries);
   })
     .then(data => {
-      callback(null, values);
+      callback(null, data);
     })
     .catch(err => {
       callback(err||cfg.NOK);
