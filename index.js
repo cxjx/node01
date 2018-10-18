@@ -67,23 +67,23 @@ async.auto({
         setResultsToDB: ['getResults', function (results, callback) {
           console.log('setResultsToDB......');
           const urls = task;
-          const data = JSON.parse(results.getResults.result).reduce((r,e) => _.extend(r,e), {});
+          const data = JSON.parse(results.getResults.result);
 
-          const values =  urls.map(url => {
-            let d = data[url.url];
-            let out = {};
-            for(let k in d){
-              out[(k.slice(0,1).toLowerCase()+k.slice(1)).replace(/([A-Z])/g,"_$1").toLowerCase()] = d[k];
-            }
-            // console.log(`[${url.id}|${url.url}] ${JSON.stringify(out)}`);
-            console.log(`[${url.id}|${url.url}]`);
-            return _.extend({url_id: url.id}, out);
-          });
-
-          if(values.length > 0){
-            _setResultsToDB(values, callback)
-          }else{
+          if(data.length == 0){
             callback(null, cfg.EMPTY);
+          }else{
+            const values = data.map(e => {
+              for(let u in e){
+                let out = {};
+                let v = e[u];
+                for(let k in v){
+                  out[(k.slice(0,1).toLowerCase()+k.slice(1)).replace(/([A-Z])/g,"_$1").toLowerCase()] = v[k];
+                }
+                out.url_id = urls.find(e => e.url == u)..id;
+                return out;
+              }
+            });
+            _setResultsToDB(values, callback);
           }
         }],
       },
@@ -100,8 +100,7 @@ async.auto({
     });
 
     // assign a callback
-    queue.drain = function(...args) {
-      console.log(args);
+    queue.drain = function() {
       callback(null, 'done');
     };
   }],
