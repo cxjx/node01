@@ -54,13 +54,15 @@ async.auto({
 
       async.auto({
         setUrlsToDB: function(callback){
+          console.log('setUrlsToDB......');
           const values = task;
 
           _setUrlsToDB(values, callback);
         },
         getUrlsFromDB: ['setUrlsToDB', function (results, callback) {
+          console.log('getUrlsFromDB......');
           const urls = results.setUrlsToDB.reduce((r,e) => {
-            return e.length ? (r.push(e),r) : r;
+            return e.length ? (r.push(e[0]),r) : r;
           }, []);
           callback(null, urls);
           // _getUrlsFromDB(callback);
