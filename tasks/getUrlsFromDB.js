@@ -7,9 +7,7 @@ const getUrlsFromDB = function (callback) {
       callback(null, data);
     })
     .catch(err => {
-      console.log('getUrlsFromDB', err);
-      callback(null, []);
-      // callback(err||cfg.NOK);
+      callback(err||cfg.NOK);
     });
 }
 

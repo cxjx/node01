@@ -47,7 +47,6 @@ async.auto({
   runQueue: ['getUrlsFromDB', function (results, callback) {
     console.log('runQueue......');
     const urls = results.getUrlsFromDB;
-
     const tasks = _.chunk(urls, cfg.urlPerTask);
 
     const queue = async.queue(function(task, callback) {
@@ -55,7 +54,6 @@ async.auto({
 
       async.auto({
         getResults: function (callback) {
-          console.log('getResults......');
           const urls = task;
 
           if(urls.length > 0){
@@ -65,7 +63,6 @@ async.auto({
           }
         },
         setResultsToDB: ['getResults', function (results, callback) {
-          console.log('setResultsToDB......');
           const urls = task;
           const data = JSON.parse(results.getResults.result);
 
@@ -91,16 +88,13 @@ async.auto({
         }],
       },
       function(err, results) {
-        // results is now equal to {'one': 1, 'two': 2}
         callback(err, results);
       });
 
     }, cfg.taskConcurrency);
 
     // add some items to the queue (batch-wise)
-    queue.push(tasks, function(...args) {
-      // console.log(args);
-    });
+    queue.push(tasks/*, function(err, results) {}*/);
 
     // assign a callback
     queue.drain = function() {

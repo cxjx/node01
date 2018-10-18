@@ -8,7 +8,7 @@ function multi_insert (values, callback) {
   // executing the query:
   db.none(query)
     .then(data => {
-      callback(null, cfg.OK);
+      callback(null, data);
     })
     .catch(err => {
       callback(err||cfg.NOK);

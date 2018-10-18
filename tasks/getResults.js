@@ -31,9 +31,4 @@ const getResults = function (urls, callback) {
   });
 };
 
-/* test */
-// getResults(['https://d178fu9mi2dmkb.cloudfront.net/webapp-media/images/logo-social.jpg'], function(err, results){
-//   console.log(results);
-// });
-
 module.exports = getResults;
