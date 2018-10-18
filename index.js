@@ -39,7 +39,7 @@ async.auto({
     // const urlsFromDB = results.getUrlsFromDB;
     // const urls = urlsFromDB.filter( url => urlsFromFile.indexOf(url.url) >= 0 );
     const urls = results.setUrlsToDB.reduce((r,e) => {
-      return e.id ? (r.push(e),r) : r;
+      return e.length ? (r.push(e[0]),r) : r;
     }, []);
     console.log(urls);
 
