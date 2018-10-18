@@ -73,7 +73,8 @@ async.auto({
           if(urls.length > 0){
             _getResults(urls, callback);
           }else{
-            callback(null, cfg.EMPTY);
+            // callback(null, cfg.EMPTY);
+            callback(cfg.EMPTY);
           }
         }],
         setResultsToDB: ['getResults', function (results, callback) {
