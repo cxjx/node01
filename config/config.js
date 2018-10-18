@@ -45,8 +45,8 @@ module.exports = {
   OK: 'success',
   NOK: 'failed',
   EMPTY: 'isEmptyArray',
-  urlPerTask: 20,
-  taskConcurrency: 10,
+  urlPerTask: 10,
+  taskConcurrency: 5,
   asyncParalelLimit: 5,
   retryOpt: {times: 3, interval: 200},
   // retryOpt: {

@@ -32,21 +32,21 @@ async.auto({
     console.log('getUrlsFromDB......');
     _getUrlsFromDB(callback);
   }],
-  getUrls: ['getUrlsFromFile', 'getUrlsFromDB', function (results, callback) {
-    console.log('getUrls......');
-    const urlsFromFile = results.getUrlsFromFile.map( url => url.url);
-    const urlsFromDB = results.getUrlsFromDB;
-    const urls = urlsFromDB.filter( url => urlsFromFile.indexOf(url.url) >= 0 );
+  // getUrls: ['getUrlsFromFile', 'getUrlsFromDB', function (results, callback) {
+  //   console.log('getUrls......');
+  //   const urlsFromFile = results.getUrlsFromFile.map( url => url.url);
+  //   const urlsFromDB = results.getUrlsFromDB;
+  //   const urls = urlsFromDB.filter( url => urlsFromFile.indexOf(url.url) >= 0 );
 
-    if(urls.length > 0){
-      callback(null, urls);
-    }else{
-      callback(cfg.EMPTY);
-    }
-  }],
-  runQueue: ['getUrls', function (results, callback) {
+  //   if(urls.length > 0){
+  //     callback(null, urls);
+  //   }else{
+  //     callback(cfg.EMPTY);
+  //   }
+  // }],
+  runQueue: ['getUrlsFromDB', function (results, callback) {
     console.log('runQueue......');
-    const urls = results.getUrls;
+    const urls = results.getUrlsFromDB;
 
     const tasks = _.chunk(urls, cfg.urlPerTask);
 
