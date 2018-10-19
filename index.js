@@ -86,9 +86,16 @@ async.auto({
     queue.drain = function() {
       callback(null, 'done');
     };
+
+    process.on('SIGINT', function () {
+      console.log('Exit now! Waiting for the current tasks to be processed......');
+      queue.remove(function (data) { return true });
+    });
   }],
 }, function(err, results) {
   pgp.end();
   console.log('err = ', err);
   // console.log('results = ', results);
+  process.exit();
 });
+
