@@ -36,11 +36,8 @@ async.auto({
           _setUrlsToDB(values, callback);
         },
         getUrlsFromDB: ['setUrlsToDB', function (results, callback) {
-          const urls = results.setUrlsToDB.reduce((r,e) => {
-            return e.length ? (r.push(e[0]),r) : r;
-          }, []);
-          callback(null, urls);
           // _getUrlsFromDB(callback);
+          callback(null, _.flatten(results.setUrlsToDB));
         }],
         getResults: ['getUrlsFromDB', function (results, callback) {
           const urls = results.getUrlsFromDB;
