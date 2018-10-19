@@ -88,7 +88,7 @@ async.auto({
     };
 
     process.on('SIGINT', function () {
-      console.log('%cExit now! Waiting for the current tasks to be processed......','color:#bada55');
+      console.log('\x1B[33m%s\x1b[0m', 'Exit now! Waiting for the current tasks to be processed......');
       queue.remove(function (data) { return true });
     });
   }],
