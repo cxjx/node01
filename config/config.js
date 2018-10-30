@@ -59,7 +59,7 @@ module.exports = {
   taskConcurrency: TASK_CONCURRENCY,
   asyncParalelLimit: asyncParalelLimit,
   retryOpt: retryOpt,
-  analysisAPI: 'http://35.202.251.156:1080/evaluation',
+  analysisAPI: 'http://104.197.205.154:1080/evaluation',
   // database connection:
   dbConnection: 'postgresql://postgres:root123@localhost:5432/test',
   URL_TABLE_NAME: URL_TABLE_NAME,
