@@ -6,7 +6,7 @@ const getResults = function (urls, callback) {
   const api = cfg.analysisAPI;
   const data = {
     'standardize': 'True',
-    'urls': urls.map(e => e.url),
+    'urls': urls,
   };
 
   const task = function (callback) {
@@ -14,7 +14,7 @@ const getResults = function (urls, callback) {
       if (!err && response.statusCode == 200){
         callback(null, body);
       }else{
-        console.log(urls.map(e => e.id), err);
+        console.log(urls, err);
         callback(err||response.statusCode||cfg.NOK);
       }
     });

@@ -10,11 +10,12 @@
   "license": "ISC",
   "dependencies": {
     "async": "^2.6.1",
-    "csvtojson": "^2.0.8",
+    "express": "^4.16.4",
     "fs-extra": "^7.0.0",
+    "images": "^3.0.1",
     "lodash": "^4.17.11",
     "path": "^0.12.7",
-    "pg-promise": "^8.4.6",
-    "request": "^2.88.0"
+    "request": "^2.88.0",
+    "website-scraper": "^3.3.7"
   }
 }
