@@ -49,6 +49,7 @@ app.get('/evaluation', function(req, res){
         let mean = _.meanBy(dataArr, function(o){return parseFloat(o[k])});
         r[k] = mean.toFixed(7);
       }
+      r['totalImages'] = data.length;
 
       const result = {};
       result[url] = r;
