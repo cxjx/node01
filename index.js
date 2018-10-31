@@ -41,7 +41,7 @@ app.get('/evaluation', function(req, res){
         result[url] = r;
         res.send(result);
       }else{
-        res.send(500, 'error');
+        res.status(500).send(err);
       }
     }else{
       const data = JSON.parse(results.getResults.result);
