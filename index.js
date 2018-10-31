@@ -35,7 +35,14 @@ app.get('/evaluation', function(req, res){
   },
   function(err, results) {
     if(err){
-      res.send('error');
+      if(err == cfg.EMPTY){
+        const result = {};
+        const r = {totalImages: 0};
+        result[url] = r;
+        res.send(result);
+      }else{
+        res.send(500, 'error');
+      }
     }else{
       const data = JSON.parse(results.getResults.result);
 
@@ -44,12 +51,11 @@ app.get('/evaluation', function(req, res){
         dataArr = dataArr.concat(Object.values(o));
       });
 
-      const r = {};
+      const r = {totalImages: data.length};
       for(let k in dataArr[0]){
         let mean = _.meanBy(dataArr, function(o){return parseFloat(o[k])});
         r[k] = mean.toFixed(7);
       }
-      r['totalImages'] = data.length;
 
       const result = {};
       result[url] = r;
