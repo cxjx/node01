@@ -34,11 +34,12 @@ app.get('/evaluation', function(req, res){
     }],
   },
   function(err, results) {
+    const result = {
+      url: url,
+      totalImages: 0,
+    };
     if(err){
       if(err == cfg.EMPTY){
-        const result = {};
-        const r = {totalImages: 0};
-        result[url] = r;
         res.send(result);
       }else{
         res.status(500).send(err);
@@ -51,15 +52,13 @@ app.get('/evaluation', function(req, res){
         dataArr = dataArr.concat(Object.values(o));
       });
 
-      const r = {totalImages: data.length};
       for(let k in dataArr[0]){
         let mean = _.meanBy(dataArr, function(o){return parseFloat(o[k])});
-        r[k] = mean.toFixed(7);
+        result[k] = mean.toFixed(7);
       }
 
-      const result = {};
-      result[url] = r;
-      res.send(result);
+      result.totalImages = data.length;
+      res.send([result]);
     }
   });
 });
