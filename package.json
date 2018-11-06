@@ -10,6 +10,7 @@
   "license": "ISC",
   "dependencies": {
     "async": "^2.6.1",
+    "body-parser": "^1.18.3",
     "express": "^4.16.4",
     "fs-extra": "^7.0.0",
     "images": "^3.0.1",

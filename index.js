@@ -2,17 +2,29 @@ require('events').EventEmitter.defaultMaxListeners = 100;
 const _ = require('lodash');
 const async = require('async');
 const express = require('express');
+const bodyParser = require('body-parser');
 
 const cfg = require('./config/config');
 const _getUrls = require('./tasks/getUrls');
 const _getResults = require('./tasks/getResults');
 
 const app = express();
-// url=xxx&pixel=num
+app.use(bodyParser.json());
+
 app.get('/evaluation', function(req, res){
+  // url=xxx&pixel=num
   console.log(req.query);
-  const url = req.query.url;
-  const pixel = req.query.pixel || cfg.minPixel;
+  handler(req.query, res);
+});
+app.post("/evaluation", function(req,res){
+  // res.json(req.body);
+  console.log(req.body);
+  handler(req.body, res);
+});
+
+function handler(req, res) {
+  const url = req.url;
+  const pixel = req.pixel || cfg.minPixel;
 
   async.auto({
     getUrls: function (callback) {
@@ -61,6 +73,6 @@ app.get('/evaluation', function(req, res){
       res.send([result]);
     }
   });
-});
+}
 
 app.listen(3000);
