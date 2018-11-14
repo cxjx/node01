@@ -54,7 +54,7 @@ const _getImageSrc = function (domain, callback) {
           }
         }
       });
-    }else if(domain.method == 2){
+    }else if(domain.method == 2 || true){
       getImageUrls(url, function(err, images) {
         if (!err) {
           images = _.uniqBy(images.filter(image => cfg.imgReg.test(image.url)), 'url');
