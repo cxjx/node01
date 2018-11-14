@@ -41,7 +41,7 @@ function handler(req, res) {
     getResults: ['getUrls', function (results, callback) {
       console.timeEnd('getUrls');
       console.time('getResults');
-      const urls = results.getUrls.imageSrc.slice(0,4);
+      const urls = results.getUrls.imageSrc;
 
       if(urls.length == 0){
         callback(cfg.EMPTY);
