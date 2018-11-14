@@ -25,18 +25,23 @@ app.post("/evaluation", function(req,res){
 function handler(req, res) {
   const url = req.url;
   const pixel = req.pixel || cfg.minPixel;
+  const method = req.method || 1
 
   async.auto({
     getUrls: function (callback) {
+      console.time('getUrls');
       const domain = {
         url: url,
         pixel: pixel,
+        method: method,
       };
 
       _getUrls(domain, callback);
     },
     getResults: ['getUrls', function (results, callback) {
-      const urls = results.getUrls.imageSrc;
+      console.timeEnd('getUrls');
+      console.time('getResults');
+      const urls = results.getUrls.imageSrc.slice(0,4);
 
       if(urls.length == 0){
         callback(cfg.EMPTY);
@@ -46,6 +51,7 @@ function handler(req, res) {
     }],
   },
   function(err, results) {
+    console.timeEnd('getResults');
     const result = {
       url: url,
       totalImages: 0,
