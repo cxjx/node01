@@ -7,6 +7,11 @@ const analysisAPI = 'http://104.197.205.154:1080/evaluation';
 const retryOpt = {times: 5, interval: 200};
 const minPixel = 200;
 const imgReg = /\.(jpe?g)(\?.*)?/;
+const imageContentTypes = [
+  // 'image/png',
+  'image/jpeg',
+  // 'image/gif',
+];
 // retryOpt = {
 //   times: 5,
 //   interval: function(retryCount) {
@@ -26,6 +31,7 @@ module.exports = {
   analysisAPI: analysisAPI,
   minPixel: minPixel,
   imgReg: imgReg,
+  imageContentTypes: imageContentTypes,
   /* https://github.com/website-scraper/node-website-scraper/blob/master/lib/config/defaults.js */
   scapeOptions: {
     directory: './tmp/download/',
