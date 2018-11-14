@@ -57,7 +57,7 @@ const _getImageSrc = function (domain, callback) {
     }else if(domain.method == 2){
       getImageUrls(url, function(err, images) {
         if (!err) {
-          images = _.uniqBy(images.filter(image => /\.(jpe?g)(\?.*)?/.test(image.url)), 'url');
+          images = _.uniqBy(images.filter(image => cfg.imgReg.test(image.url)), 'url');
           images.forEach(image => {
             ps.push(probe(image.url));
           });
