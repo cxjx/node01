@@ -5,7 +5,8 @@ var phantomjs = require('phantomjs-prebuilt');
 function getImageUrls(url, callback) {
   var phantomArgs = [
     path.join(__dirname, 'lib', 'phantom_script.js'),
-    url
+    url,
+    // true,
   ];
 
   return new Promise(function(resolve, reject) {
@@ -15,10 +16,12 @@ function getImageUrls(url, callback) {
     var result = '';
 
     phantom.stdout.on('data', function(data) {
-      if(data.indexOf('[debug]') == 0) {
-        console.log(`${data}`);
+      data = data.toString();
+      let index = data.indexOf('[data]');
+      if(index != -1) {
+        result += data.substring(index+'[data]'.length).replace('\n','');
       }else{
-        result += data;
+        console.log(data);
       }
     });
 
