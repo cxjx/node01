@@ -63,7 +63,7 @@ function handler(req, res) {
         res.status(500).send(err);
       }
     }else{
-      const data = JSON.parse(results.getResults.result);
+      const data = typeof results.getResults.result === 'string' ? JSON.parse(results.getResults.result) : results.getResults.result;
 
       let dataArr = [];
       data.forEach(function(o){
