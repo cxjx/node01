@@ -21,7 +21,7 @@ function getImageUrls(url, callback) {
       if(index != -1) {
         result += data.substring(index+'[data]'.length).replace('\n','');
       }else{
-        console.log(data);
+        // console.log(data);
       }
     });
 
