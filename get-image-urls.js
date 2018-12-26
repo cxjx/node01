@@ -19,7 +19,7 @@ function getImageUrls(url, callback) {
       data = data.toString();
       let index = data.indexOf('[data]');
       if(index != -1) {
-        result += data.substring(index+'[data]'.length).replace('\n','');
+        result += data.substring(index+'[data]'.length).replace(/\n/g, '');
       }else{
         // console.log(data);
       }
