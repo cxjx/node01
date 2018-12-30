@@ -54,59 +54,67 @@ const _getImageSrc = function (domain, callback) {
           }
         }
       });
-    }else if(domain.method == 2 || true){
-      getImageUrls(url, function(err, images) {
-        if (!err) {
-          images = _.uniqBy(images.filter(image => cfg.imgReg.test(image.url)), 'url');
-          images.forEach(image => {
-            ps.push(probe(image.url));
-          });
-          Promise.all(ps.map(p => {
-            return p.catch(err => [{err:err}][0]);
-          })).then(results => {
-            results.forEach(result => {
-              if(Math.max(result.width, result.height) >= minPixel){
-                // console.log(result.url);
-                imageSrc.push(result.url);
-              }
-            });
-            if(imageSrc.length <= 0){
-              callback(cfg.EMPTY);
-            }else{
-              callback(null, imageSrc);
-            }
-          }).catch(err => {
-            console.log(err);
-            callback(err);
-          });
+    }else{
+      getImageUrls(url)
+      .then(function(images) {
+        console.log(`find images length[all]: ${images.length}`);
+        console.log(`find images length[onResourceRequested]: ${images.filter(image => image.contentType == 'onResourceRequested').length}`);
+        console.log(`find images length[onResourceTimeout]: ${images.filter(image => image.contentType == 'onResourceTimeout').length}`);
 
-          // async.parallel(ps.map(promise => {
-          //   return function (callback) {
-          //     promise.then(result => {
-          //       callback(null, result);
-          //     }).catch(error => {
-          //       callback(null, {width:0,height:0});
-          //     })
-          //   }
-          // }),
-          // function(err, results) {
-          //   results.forEach(result => {
-          //       console.log(result.width);
-          //     if(Math.max(result.width, result.height) >= minPixel){
-          //       imageSrc.push(result.url);
-          //     }
-          //   });
-          //   if(imageSrc.length <= 0){
-          //     callback(cfg.EMPTY);
-          //   }else{
-          //     callback(null, imageSrc);
-          //   }
-          // });
-        }
-        else {
-          console.log('ERROR', err);
+        images = images.filter(image => cfg.imgReg.test(image.url));
+        console.log(`find images length[type]: ${images.length}`);
+
+        images = _.uniqBy(images, 'url');
+        console.log(`find images length[uniq]: ${images.length}`);
+
+        console.time('probeImgSize');
+        images.forEach(image => {
+          ps.push(probe(image.url));
+        });
+        Promise.all(ps.map(p => {
+          return p.catch(err => [{err:err}][0]);
+        })).then(results => {
+          console.timeEnd('probeImgSize');
+          results.forEach(result => {
+            if(Math.max(result.width, result.height) >= minPixel){
+              imageSrc.push(result.url);
+            }
+          });
+          if(imageSrc.length <= 0){
+            callback(cfg.EMPTY);
+          }else{
+            console.log(`find images length[size]: ${images.length}`);
+            callback(null, imageSrc);
+          }
+        }).catch(err => {
           callback(err);
-        }
+        });
+
+        // async.parallel(ps.map(promise => {
+        //   return function (callback) {
+        //     promise.then(result => {
+        //       callback(null, result);
+        //     }).catch(error => {
+        //       callback(null, {width:0,height:0});
+        //     })
+        //   }
+        // }),
+        // function(err, results) {
+        //   results.forEach(result => {
+        //       console.log(result.width);
+        //     if(Math.max(result.width, result.height) >= minPixel){
+        //       imageSrc.push(result.url);
+        //     }
+        //   });
+        //   if(imageSrc.length <= 0){
+        //     callback(cfg.EMPTY);
+        //   }else{
+        //     callback(null, imageSrc);
+        //   }
+        // });
+      })
+      .catch(function(err) {
+        callback(err);
       });
     }
   };
@@ -115,6 +123,7 @@ const _getImageSrc = function (domain, callback) {
   async.retry(cfg.retryOpt, task, function(err, results) {
     // do something with the result
     if(err){
+      console.log(err);
       callback(null, _.extend({}, domain, {imageSrc: []}));
     }else{
       callback(null, _.extend({}, domain, {imageSrc: results}));

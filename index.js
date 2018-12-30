@@ -25,7 +25,7 @@ app.post("/evaluation", function(req,res){
 function handler(req, res) {
   const url = req.url;
   const pixel = req.pixel || cfg.minPixel;
-  const method = req.method || 1
+  const method = req.method || 2
 
   async.auto({
     getUrls: function (callback) {
@@ -42,11 +42,13 @@ function handler(req, res) {
       console.timeEnd('getUrls');
       console.time('getResults');
       const urls = results.getUrls.imageSrc;
+      console.log(urls);
 
       if(urls.length == 0){
         callback(cfg.EMPTY);
       }else{
-        _getResults(urls, callback);
+        callback(cfg.EMPTY);
+        //_getResults(urls, callback);
       }
     }],
   },
