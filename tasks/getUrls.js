@@ -58,8 +58,8 @@ const _getImageSrc = function (domain, callback) {
       getImageUrls(url)
       .then(function(images) {
         console.log(`find images length[all]: ${images.length}`);
-        console.log(`find images length[onResourceRequested]: ${images.filter(image => image.contentType == 'onResourceRequested').length}`);
-        console.log(`find images length[onResourceTimeout]: ${images.filter(image => image.contentType == 'onResourceTimeout').length}`);
+        console.log(`find images length[all:onResourceRequested]: ${images.filter(image => image.contentType == 'onResourceRequested').length}`);
+        console.log(`find images length[all:onResourceTimeout]: ${images.filter(image => image.contentType == 'onResourceTimeout').length}`);
 
         images = images.filter(image => cfg.imgReg.test(image.url));
         console.log(`find images length[type]: ${images.length}`);

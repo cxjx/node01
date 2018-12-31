@@ -42,13 +42,13 @@ function handler(req, res) {
       console.timeEnd('getUrls');
       console.time('getResults');
       const urls = results.getUrls.imageSrc;
-      console.log(urls);
+      console.log('images length:', urls.length);
 
       if(urls.length == 0){
         callback(cfg.EMPTY);
       }else{
         callback(cfg.EMPTY);
-        //_getResults(urls, callback);
+        // _getResults(urls, callback);
       }
     }],
   },

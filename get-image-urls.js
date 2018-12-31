@@ -20,14 +20,15 @@ function getImageUrls(url, callback) {
 
     phantom.stderr.on('data', function(data) {
       console.log(Object.prototype.toString.call(data));
-      data = data.toString().replace(/\n/g, '');
 
-      let index = data.indexOf('[data]');
-      if(index != -1) {
-        result += data.substring(index+'[data]'.length);
-      }else{
-        console.log('getUrls[stdout]' + data);
-      }
+      data = data.toString().replace(/\n/g, '');
+      // let index = data.indexOf('[data]');
+      // if(index != -1) {
+      //   result += data.substring(index+'[data]'.length);
+      // }else{
+      //   console.log('getUrls[stdout]' + data);
+      // }
+      result += data;
     });
     phantom.stdout.on('data', function(data) {
       console.log('getUrls[stderr]' + data);
