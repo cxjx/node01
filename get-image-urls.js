@@ -5,6 +5,8 @@ console.log(JSON.stringify(phantomjs));
 
 function getImageUrls(url, callback) {
   var phantomArgs = [
+    // '--load-images=no',
+    // '--disk-cache=yes',
     path.join(__dirname, 'lib', 'phantom_script.js'),
     url,
     // true,
@@ -12,11 +14,12 @@ function getImageUrls(url, callback) {
 
   return new Promise(function(resolve, reject) {
     var phantom = spawn(phantomjs.path, phantomArgs);
-    var images = null;
+    var images = [];
     var error = null;
     var result = '';
 
-    phantom.stdout.on('data', function(data) {
+    phantom.stderr.on('data', function(data) {
+      console.log(Object.prototype.toString.call(data));
       data = data.toString().replace(/\n/g, '');
 
       let index = data.indexOf('[data]');
@@ -26,36 +29,30 @@ function getImageUrls(url, callback) {
         console.log('getUrls[stdout]' + data);
       }
     });
-    phantom.stderr.on('data', function(data) {
+    phantom.stdout.on('data', function(data) {
       console.log('getUrls[stderr]' + data);
-      // error = data;
     });
     phantom.on("exit", function(code) {
       console.log('getUrls[exit]', code);
     });
+    phantom.on("error", function(code) {
+      console.log('getUrls[error]', code);
+    });
     phantom.on('close', function(code) {
       console.log('getUrls[close]', code);
-      // console.log('getUrls[result]', result);
+
       try {
-        images = JSON.parse(result);
-      }
-      catch(err) {
-        console.log('getUrls[err]', err);
-        error = err;
-        images = null;
+        images = JSON.parse(result||'[]');
+      }catch(parseErr) {
+        error = parseErr;
       }
 
-      if (!images && !error) {
-        error = new Error('no images found');
-      }
-
-      if (error) {
-        reject(error);
+      if(error) {
         if (callback) callback(error, null);
-      }
-      else {
-        resolve(images)
+        reject(error);
+      }else{
         if (callback) callback(null, images);
+        resolve(images);
       }
     });
   })
