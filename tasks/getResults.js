@@ -1,6 +1,7 @@
 const async = require('async');
 const request = require('request');
 const cfg = require('../config/config');
+const logger = require('./logger');
 
 const getResults = function (urls, callback) {
   const api = cfg.analysisAPI;
@@ -14,7 +15,7 @@ const getResults = function (urls, callback) {
       if (!err && response.statusCode == 200){
         callback(null, body);
       }else{
-        console.log(urls, err);
+        logger.error(urls, err);
         callback(err||response.statusCode||cfg.NOK);
       }
     });

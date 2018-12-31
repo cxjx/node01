@@ -7,60 +7,64 @@ const bodyParser = require('body-parser');
 const cfg = require('./config/config');
 const _getUrls = require('./tasks/getUrls');
 const _getResults = require('./tasks/getResults');
+const logger = require('./tasks/logger');
 
 const app = express();
 app.use(bodyParser.json());
 
 app.get('/evaluation', function(req, res){
   // url=xxx&pixel=num
-  console.log(req.query);
+  logger.info(req.query);
   handler(req.query, res);
 });
 app.post("/evaluation", function(req,res){
   // res.json(req.body);
-  console.log(req.body);
+  logger.info(req.body);
   handler(req.body, res);
 });
 
 function handler(req, res) {
   const url = req.url;
   const pixel = req.pixel || cfg.minPixel;
-  const method = req.method || 2
+  const method = req.method || 2;
+  let startTime1, startTime2, endTime1, endTime2;
 
   async.auto({
     getUrls: function (callback) {
-      console.time('getUrls');
       const domain = {
         url: url,
         pixel: pixel,
         method: method,
       };
 
+      startTime1 = +new Date();
+
       _getUrls(domain, callback);
     },
     getResults: ['getUrls', function (results, callback) {
-      console.timeEnd('getUrls');
-      console.time('getResults');
       const urls = results.getUrls.imageSrc;
-      console.log('images length:', urls.length);
+
+      endTime1 = startTime2 = +new Date();
+      logger.info(`getImgUrls[${url}]: ${endTime1-startTime1}ms, totalImages: ${urls.length}`);
 
       if(urls.length == 0){
         callback(cfg.EMPTY);
       }else{
-        callback(cfg.EMPTY);
-        // _getResults(urls, callback);
+        _getResults(urls, callback);
       }
     }],
   },
   function(err, results) {
-    console.timeEnd('getResults');
+    endTime2 = +new Date();
+    logger.info(`getResults[${url}]: ${endTime2-startTime2}ms`);
+
     const result = {
       url: url,
       totalImages: 0,
     };
     if(err){
       if(err == cfg.EMPTY){
-        res.send(result);
+        res.send([result]);
       }else{
         res.status(500).send(err);
       }

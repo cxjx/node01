@@ -7,6 +7,7 @@ const getImageUrls = require('../get-image-urls');
 // const images = require("images");
 const probe = require('probe-image-size');
 const cfg = require('../config/config');
+const logger = require('./logger');
 
 // input = {id: 1, url: 'http://letsdothis.com'};
 // output = {
@@ -57,33 +58,34 @@ const _getImageSrc = function (domain, callback) {
     }else{
       getImageUrls(url)
       .then(function(images) {
-        console.log(`find images length[all]: ${images.length}`);
-        console.log(`find images length[all:onResourceRequested]: ${images.filter(image => image.contentType == 'onResourceRequested').length}`);
-        console.log(`find images length[all:onResourceTimeout]: ${images.filter(image => image.contentType == 'onResourceTimeout').length}`);
+        logger.debug(`totalImages[all]: ${images.length}`);
+        logger.debug(`totalImages[all:onResourceRequested]: ${images.filter(image => image.contentType == 'onResourceRequested').length}`);
+        logger.debug(`totalImages[all:onResourceTimeout]: ${images.filter(image => image.contentType == 'onResourceTimeout').length}`);
 
         images = images.filter(image => cfg.imgReg.test(image.url));
-        console.log(`find images length[type]: ${images.length}`);
+        logger.debug(`totalImages[type]: ${images.length}`);
 
         images = _.uniqBy(images, 'url');
-        console.log(`find images length[uniq]: ${images.length}`);
+        logger.debug(`totalImages[uniq]: ${images.length}`);
 
-        console.time('probeImgSize');
+        const startTime = +new Date();
         images.forEach(image => {
           ps.push(probe(image.url));
         });
         Promise.all(ps.map(p => {
           return p.catch(err => [{err:err}][0]);
         })).then(results => {
-          console.timeEnd('probeImgSize');
+          const endTime = +new Date();
+          logger.info(`getImgSize[${domain.url}]: ${endTime-startTime}ms`);
           results.forEach(result => {
             if(Math.max(result.width, result.height) >= minPixel){
               imageSrc.push(result.url);
             }
           });
+          logger.debug(`totalImages[size]: ${imageSrc.length}`);
           if(imageSrc.length <= 0){
             callback(cfg.EMPTY);
           }else{
-            console.log(`find images length[size]: ${imageSrc.length}`);
             callback(null, imageSrc);
           }
         }).catch(err => {
@@ -123,7 +125,7 @@ const _getImageSrc = function (domain, callback) {
   async.retry(cfg.retryOpt, task, function(err, results) {
     // do something with the result
     if(err){
-      console.log(err);
+      logger.error(err);
       callback(null, _.extend({}, domain, {imageSrc: []}));
     }else{
       callback(null, _.extend({}, domain, {imageSrc: results}));

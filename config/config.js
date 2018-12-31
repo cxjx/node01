@@ -4,7 +4,13 @@ const IMAGE_TABLE_NAME = 'image2';
 const URL_NUM_PER_TASK = 10;
 const TASK_CONCURRENCY = 10;
 const analysisAPI = 'http://104.197.205.154:1080/evaluation';
-const retryOpt = {times: 1, interval: 200};
+const retryOpt = {
+  times: 1,
+  interval: function(retryCount) {
+    // return 50 * Math.pow(2, retryCount);
+    return 200
+  }
+};
 const minPixel = 200;
 const imgReg = /\.(jpe?g)(\?.*)?/;
 const imageContentTypes = [
@@ -12,15 +18,12 @@ const imageContentTypes = [
   'image/jpeg',
   // 'image/gif',
 ];
-// retryOpt = {
-//   times: 5,
-//   interval: function(retryCount) {
-//     return 50 * Math.pow(2, retryCount);
-//   }
-// };
+// log4js
+const logLevel = 'info';
 const asyncParalelLimit = 5;
 
 module.exports = {
+  logLevel: logLevel,
   OK: 'success',
   NOK: 'failed',
   EMPTY: 'isEmptyArray',

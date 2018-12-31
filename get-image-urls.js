@@ -1,7 +1,9 @@
-var path = require('path');
-var spawn = require('child_process').spawn;
-var phantomjs = require('phantomjs-prebuilt');
-console.log(JSON.stringify(phantomjs));
+const path = require('path');
+const spawn = require('child_process').spawn;
+const phantomjs = require('phantomjs-prebuilt');
+const logger = require('./tasks/logger');
+
+logger.info(JSON.stringify(phantomjs));
 
 function getImageUrls(url, callback) {
   var phantomArgs = [
@@ -19,7 +21,7 @@ function getImageUrls(url, callback) {
     var result = '';
 
     phantom.stderr.on('data', function(data) {
-      console.log(Object.prototype.toString.call(data));
+      logger.debug(Object.prototype.toString.call(data));
 
       data = data.toString().replace(/\n/g, '');
       // let index = data.indexOf('[data]');
@@ -31,21 +33,21 @@ function getImageUrls(url, callback) {
       result += data;
     });
     phantom.stdout.on('data', function(data) {
-      console.log('getUrls[stderr]' + data);
+      logger.debug('getUrls[stderr]' + data);
     });
     phantom.on("exit", function(code) {
-      console.log('getUrls[exit]', code);
+      logger.debug('getUrls[exit]', code);
     });
     phantom.on("error", function(code) {
-      console.log('getUrls[error]', code);
+      logger.debug('getUrls[error]', code);
     });
     phantom.on('close', function(code) {
-      console.log('getUrls[close]', code);
+      logger.debug('getUrls[close]', code);
 
       try {
         images = JSON.parse(result||'[]');
       }catch(parseErr) {
-        console.log(result);
+        logger.error(result);
         error = parseErr;
       }
 
