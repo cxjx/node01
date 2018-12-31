@@ -45,6 +45,7 @@ function getImageUrls(url, callback) {
       try {
         images = JSON.parse(result||'[]');
       }catch(parseErr) {
+        console.log(result);
         error = parseErr;
       }
 

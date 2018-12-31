@@ -83,7 +83,7 @@ const _getImageSrc = function (domain, callback) {
           if(imageSrc.length <= 0){
             callback(cfg.EMPTY);
           }else{
-            console.log(`find images length[size]: ${images.length}`);
+            console.log(`find images length[size]: ${imageSrc.length}`);
             callback(null, imageSrc);
           }
         }).catch(err => {
