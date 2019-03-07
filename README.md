@@ -1,6 +1,6 @@
 # node01
 npm install
-
+# add
 
 # modify the config in config/config.js
 const MinPixel = 100;
